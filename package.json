@@ -1,0 +1,11 @@
+{
+    "dependencies": {
+        "jquery": "^3.6.0",
+        "bootstrap": "^5.0.2",
+        "datatables.net": "^1.11.3",
+        "datatables.net-bs4": "^1.11.3",
+        "chart.js": "^3.5.1",
+        "moment": "^2.29.1",
+        "@fortawesome/fontawesome-free": "^5.15.4"
+    }
+}
