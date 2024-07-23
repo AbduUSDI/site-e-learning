@@ -133,9 +133,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message = "ID de la demande d'ami invalide pour la suppression.";
                     }
                     break;
-                case 'update_profile_info':
+                    case 'update_profile_info':
+                        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                            $prenom = filter_input(INPUT_POST, 'prenom', FILTER_SANITIZE_STRING);
+                            $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_STRING);
+                            $date_naissance = filter_input(INPUT_POST, 'date_naissance', FILTER_SANITIZE_STRING);
+                            $biographie = filter_input(INPUT_POST, 'biographie', FILTER_SANITIZE_STRING);
+                            $photo_profil = $userProfile['photo_profil']; // Garder l'ancienne photo par défaut
+                            
+                            if (isset($_FILES['photo_profil']) && $_FILES['photo_profil']['error'] == UPLOAD_ERR_OK) {
+                                $image = $_FILES['photo_profil'];
+                                $allowed = array("jpg" => "image/jpg", "jpeg" => "image/jpeg", "gif" => "image/gif", "png" => "image/png");
+                                $filetype = $image['type'];
+                                
+                                // Vérifier le type MIME du fichier
+                                if (in_array($filetype, $allowed)) {
+                                    $imageName = time() . '_' . $image['name'];
+                                    if (move_uploaded_file($image['tmp_name'], 'uploads/profile_pictures/' . $imageName)) {
+                                        $photo_profil = $imageName;
+                                    } else {
+                                        $error = "Erreur : Il y a eu un problème de téléchargement de votre fichier. Veuillez réessayer.";
+                                    }
+                                } else {
+                                    $error = "Erreur : Type de fichier non autorisé.";
+                                }
+                            }
+                            
+                            if (!isset($error)) { // Mettre à jour uniquement s'il n'y a pas d'erreurs avec le téléchargement de fichier
+                                $result = $profile->saveProfile($userId, $prenom, $nom, $date_naissance, $biographie, $photo_profil);
+                                $message = $result ? "Profil mis à jour avec succès." : "Erreur lors de la mise à jour du profil.";
+                                if ($result) {
+                                    $userProfile = $profile->getProfileByUserId($userId); // Rafraîchir les données du profil
+                                }
+                            } else {
+                                $message = $error;
+                            }
+                        }
+                        break;
                     
-
+                    
                 default:
                     $message = "Action non reconnue.";
             }
@@ -163,7 +199,7 @@ include 'templates/navbar.php';
 
 <style>
     body {
-        background-image: url('image/background.jpg');
+        background-image: url('../image/background.jpg');
         padding-top: 48px;
     }
     h1, h2, h3 {
@@ -179,18 +215,6 @@ include 'templates/navbar.php';
     }
     .form-control, .btn, .alert {
         border-radius: 5px;
-    }
-    .btn-info {
-        background-color: #17a2b8;
-        border-color: #17a2b8;
-    }
-    .btn-warning {
-        background-color: #ffc107;
-        border-color: #ffc107;
-    }
-    .btn-danger {
-        background-color: #dc3545;
-        border-color: #dc3545;
     }
     .alert {
         margin-top: 20px;
@@ -212,7 +236,9 @@ include 'templates/navbar.php';
             <h5 class="card-title"><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h5>
             <p class="card-text"><strong>Date de naissance:</strong> <?php echo $userProfile['date_naissance'] ?? 'Non renseignée'; ?></p>
             <p class="card-text"><strong>Biographie:</strong> <?php echo nl2br(htmlspecialchars($userProfile['biographie'] ?? 'Aucune biographie')); ?></p>
-            <a href="edit_profile.php" class="btn btn-info">Modifier le profil</a>
+            <button class="btn btn-info btn-modifier-profile" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+    Modifier le profil
+</button>
         </div>
     </div>
 </div>
@@ -400,7 +426,43 @@ include 'templates/navbar.php';
         </table>
     <?php endif; ?>
 </div>
-
+<!-- Modal pour modifier le profil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Modifier le profil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="my_profile.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update_profile_info">
+                    <div class="mb-3">
+                        <label for="prenom" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="prenom" name="prenom" value="<?php echo htmlspecialchars($userProfile['prenom'] ?? ''); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nom" name="nom" value="<?php echo htmlspecialchars($userProfile['nom'] ?? ''); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_naissance" class="form-label">Date de naissance</label>
+                        <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="<?php echo $userProfile['date_naissance'] ?? ''; ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label for="biographie" class="form-label">Biographie</label>
+                        <textarea class="form-control" id="biographie" name="biographie"><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="photo_profil" class="form-label">Photo de profil</label>
+                        <input type="file" class="form-control" id="photo_profil" name="photo_profil">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var modifierButtons = document.querySelectorAll('.btn-modifier');
@@ -415,6 +477,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    var modifierProfileButton = document.querySelector('.btn-modifier-profile');
+    if (modifierProfileButton) {
+        modifierProfileButton.addEventListener('click', function() {
+            var target = this.getAttribute('data-bs-target');
+            var modal = document.querySelector(target);
+            if (modal) {
+                var modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
+            }
+        });
+    }
 
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
