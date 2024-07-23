@@ -15,19 +15,19 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
         switch ($roleId) {
           case 1:
-            $rolePage = 'index1.php';
+            $rolePage = '../index1.php';
             break;
           case 2:
-            $rolePage = 'index2.php';
+            $rolePage = '../index2.php';
             break;
           case 3:
-            $rolePage = 'index3.php';
+            $rolePage = '../index3.php';
             break;
         }
       ?>
       <a class="navbar-brand" href="<?php echo htmlspecialchars($rolePage); ?>">E-learning</a>
     <?php else: ?>
-      <a class="navbar-brand" href="../index.php">E-learning</a>
+      <a class="navbar-brand" href="index.php">E-learning</a>
     <?php endif; ?>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -35,30 +35,30 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="my_profile.php">Mon compte</a>
+          <a class="nav-link" aria-current="page" href="index.php">Accueil forum</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="forum/index.php">Le forum</a>
+          <a class="nav-link" aria-current="page" href="my_profile.php">Mon compte</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
-            La médiateque
+            Discussions
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#">Cours de Mathématiques</a></li>
-            <li><a class="dropdown-item" href="#">Cours d'Anglais</a></li>
+            <li><a class="dropdown-item" href="add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item" href="threads.php">Les discussions</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Quiz Mathématiques</a></li>
-            <li><a class="dropdown-item" href="#">Quiz Anglais</a></li>
+            <li><a class="dropdown-item" href="my_threads.php">Mes publications</a></li>
+            <li><a class="dropdown-item" href="profile.php">Mon profil</a></li>
           </ul>
         </li>
         <?php if (isset($_SESSION['user'])): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="student/logout.php">Déconnexion</a>
+                    <a class="nav-link" href="../student/logout.php">Déconnexion</a>
                 </li>
             <?php else: ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="login.php">Connexion</a>
+                    <a class="nav-link" href="../login.php">Connexion</a>
                 </li>
             <?php endif; ?>
 
@@ -66,19 +66,19 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
             
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="admin/index.php">Mon espace administrateur</a>
+                    <a class="nav-link" href="../admin/index.php">Mon espace administrateur</a>
                 </li>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 2): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="doctor/index.php">Mon espace formateur</a>
+                    <a class="nav-link" href="../teacher/index.php">Mon espace formateur</a>
                 </li>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 3): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="parent/index.php">Mon espace apprenant</a>
+                    <a class="nav-link" href="../student/index.php">Mon espace apprenant</a>
                 </li>
             <?php endif; ?>
       </ul>
