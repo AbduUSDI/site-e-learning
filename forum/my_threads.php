@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.classList.toggle('show');
             }
         });
-    });
+    })});
 </script>
 
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>

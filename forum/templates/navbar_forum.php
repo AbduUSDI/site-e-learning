@@ -49,7 +49,7 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
             <li><a class="dropdown-item" href="threads.php">Les discussions</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="my_threads.php">Mes publications</a></li>
-            <li><a class="dropdown-item" href="profile.php">Mon profil</a></li>
+            <li><a class="dropdown-item" href="my_profile.php">Mon profil</a></li>
           </ul>
         </li>
         <?php if (isset($_SESSION['user'])): ?>
