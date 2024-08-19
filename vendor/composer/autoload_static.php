@@ -113,8 +113,8 @@ class ComposerStaticInitb8c5637f31c97d8917b208e9a8524073
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Container\\' => 
         array (
@@ -162,7 +162,7 @@ class ComposerStaticInitb8c5637f31c97d8917b208e9a8524073
         ),
         'App\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/functions',
+            0 => __DIR__ . '/../..' . '/App',
         ),
     );
 
