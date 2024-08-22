@@ -3,6 +3,8 @@ session_start();
 
 // Durée de vie de la session en secondes (30 minutes)
 $sessionLifetime = 1800;
+// Vérifiez que l'utilisateur est connecté et qu'il est un administrateur
+$user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
 // Vérification que l'utilisateur est connecté et est un administrateur
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
@@ -38,31 +40,185 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
 include_once '../../../public/templates/header.php'; ?>
 
 <style>
-h1, h2, h3 {
-    text-align: center;
-}
+    body {
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
 
-body {
-    background-image: url('../../../public/image_and_video/gif/anim_background.gif');
-    padding-top: 48px; /* Un padding pour régler le décalage à cause de la classe fixed-top de la navbar */
-}
+    .navbar {
+        background-color: #343a40;
+        padding: 10px 0;
+    }
 
-h1, .mt-5 {
-    background: whitesmoke;
-    border-radius: 15px;
-}
+    .navbar a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: bold;
+        margin: 0 15px;
+    }
+
+    .navbar a:hover {
+        text-decoration: underline;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .table-responsive {
+        margin-bottom: 50px;
+    }
+
+    .table {
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th {
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 15px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .table td {
+        padding: 15px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+    }
+
+    .form-control {
+        border-radius: 4px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+    }
+
+    footer {
+        background-color: #343a40;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    footer a {
+        color: #adb5bd;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+
+    /* Ajout de la section "hero" pour donner une touche professionnelle */
+    .hero {
+        background: url('../../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background-size: cover;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        border-radius: 10px;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+    }
+    .navbar-toggler {
+    background-color: #fff; /* Changer la couleur de fond du bouton */
+    border: none; /* Supprimer les bordures */
+    outline: none; /* Supprimer l'outline */
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        /* Remplacer la couleur de l'icône par une couleur plus foncée */
+        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
+    }
+
+    .navbar-toggler:focus {
+        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+    }
+    .navbar-toggler-icon {
+        width: 25px;
+        height: 25px;
+    }
 </style>
-
-<?php
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-// Vérifiez que l'utilisateur est connecté et qu'il est un administrateur
-$user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
-
-?>
-
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar bg">
   <div class="container-fluid">
     <a class="navbar-brand" href="admin_dashboard.php">Admin Dashboard</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

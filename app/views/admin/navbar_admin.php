@@ -20,11 +20,11 @@ if (!$user || $user['role_id'] != 1) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     
     $authController = new AuthController($db);
-    $authController->logoutAdmin();
+    $authController->logoutAdminInFolder();
 }
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar bg">
   <div class="container-fluid">
     <a class="navbar-brand" href="../admin_dashboard.php">Admin Dashboard</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

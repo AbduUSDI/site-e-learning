@@ -10,9 +10,9 @@ $db = $database->getConnection();
 $courseController = new CourseController($db);
 
 $studentId = $_POST['student_id'];
-$courseName = $_POST['course_name'];
+$courseId = $_POST['course_id']; // Utilisation de course_id au lieu de course_name
 
-if ($courseController->assignCourseToStudent($studentId, $courseName)) {
+if ($courseController->assignCourseToStudent($studentId, $courseId)) {
     echo json_encode(['status' => 'success', 'message' => 'Formation ajoutée avec succès.']);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Erreur lors de l\'ajout de la formation.']);

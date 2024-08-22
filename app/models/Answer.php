@@ -107,25 +107,45 @@ class Answer
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function deleteMissingAnswers($question_id, $existingAnswerIds)
-{
-    // Vérifie si des réponses existent pour la question
-    if (empty($existingAnswerIds)) {
-        $query = "DELETE FROM " . $this->table_name . " WHERE question_id = :question_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':question_id', $question_id);
-    } else {
-        // Supprime les réponses qui ne sont pas dans $existingAnswerIds
-        $placeholders = implode(',', array_fill(0, count($existingAnswerIds), '?'));
-        $query = "DELETE FROM " . $this->table_name . " WHERE question_id = ? AND id NOT IN ($placeholders)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $question_id);
-        foreach ($existingAnswerIds as $k => $id) {
-            $stmt->bindValue($k + 2, $id); // $k+2 car l'index 1 est occupé par question_id
-        }
+    {
+        // Vérifie si des réponses existent pour la question
+        if (empty($existingAnswerIds)) {
+            $query = "DELETE FROM " . $this->table_name . " WHERE question_id = :question_id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':question_id', $question_id);
+        } else {
+            // Supprime les réponses qui ne sont pas dans $existingAnswerIds
+            $placeholders = implode(',', array_fill(0, count($existingAnswerIds), '?'));
+            $query = "DELETE FROM " . $this->table_name . " WHERE question_id = ? AND id NOT IN ($placeholders)";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $question_id);
+            foreach ($existingAnswerIds as $k => $id) {
+                $stmt->bindValue($k + 2, $id); // $k+2 car l'index 1 est occupé par question_id
+            }
     }
 
     return $stmt->execute();
-}
+    }
+    public function createAnswer($questionId, $answerText, $isCorrect)
+        {
+            $query = "INSERT INTO answers (question_id, answer_text, is_correct) VALUES (:question_id, :answer_text, :is_correct)";
+            $stmt = $this->conn->prepare($query);
 
+            $stmt->bindParam(':question_id', $questionId);
+            $stmt->bindParam(':answer_text', $answerText);
+            $stmt->bindParam(':is_correct', $isCorrect);
+
+            return $stmt->execute();
+        }
+
+        public function getAnswersByQuestionId($question_id)
+        {
+            $query = "SELECT * FROM " . $this->table_name . " WHERE question_id = :question_id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':question_id', $question_id);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
 
 }

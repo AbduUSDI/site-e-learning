@@ -215,44 +215,46 @@ include '../../../public/templates/header.php';
 
 <style>
     body {
-        background-image: url('../../../public/image_and_video/gif/anim_background.gif');
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
-    }
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    .left-sidebar, .right-sidebar, .main-content {
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        padding: 20px;
+        color: #333;
+        margin: 0;
+        padding: 0;
     }
     .profile-header {
         text-align: center;
-        margin-bottom: 20px;
+        margin-bottom: 30px;
     }
+
     .profile-header img {
         border-radius: 50%;
         width: 150px;
         height: 150px;
+        object-fit: cover;
     }
+
     .profile-header h1 {
-        font-size: 24px;
+        font-size: 2rem;
         margin-top: 10px;
     }
+
     .profile-header p {
         color: #555;
     }
-    .sidebar-item, .content-item {
+
+    .left-sidebar, .right-sidebar, .main-content {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
         margin-bottom: 20px;
     }
+
     .sidebar-item h3, .content-item h3 {
-        font-size: 20px;
-        margin-bottom: 10px;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
     }
+
     .list-group-item {
         display: flex;
         justify-content: space-between;
@@ -261,41 +263,225 @@ include '../../../public/templates/header.php';
         border: 1px solid #ddd;
         border-radius: 4px;
         margin-bottom: 10px;
+        background-color: #f8f9fa;
     }
-    .mt-5 {
-    background: whitesmoke;
-    border-radius: 15px;
-}
+
+    .navbar {
+        background-color: #343a40;
+        padding: 10px 0;
+    }
+
+    .navbar a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: bold;
+        margin: 0 15px;
+    }
+
+    .navbar a:hover {
+        text-decoration: underline;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .table-responsive {
+        margin-bottom: 50px;
+    }
+
+    .table {
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th {
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 15px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .table td {
+        padding: 15px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+    }
+
+    .form-control {
+        border-radius: 4px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+    }
+
+    footer {
+        background-color: #343a40;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    footer a {
+        color: #adb5bd;
+        text-decoration: none;
+    }
+
+    footer a:hover {
+        text-decoration: underline;
+    }
+    .modal-header, .modal-footer {
+        background-color: #f0f2f5;
+    }
+
+    .modal-title {
+        font-weight: bold;
+        color: #333;
+    }
+    /* Ajout de la section "hero" pour donner une touche professionnelle */
+    .hero {
+        background: url('../../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background-size: cover;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        border-radius: 10px;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+    }
+    .navbar-toggler {
+    background-color: #fff; /* Changer la couleur de fond du bouton */
+    border: none; /* Supprimer les bordures */
+    outline: none; /* Supprimer l'outline */
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        /* Remplacer la couleur de l'icône par une couleur plus foncée */
+        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
+    }
+
+    .navbar-toggler:focus {
+        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+    }
+    .navbar-toggler-icon {
+        width: 25px;
+        height: 25px;
+    }
+    .bio {
+        background-color: white;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+        margin-top: 50px;
+        opacity: 75%;
+        border-radius: 12px;
+    }
 </style>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+<nav class="navbar navbar-expand-lg navbar bg">
   <div class="container-fluid">
     <a class="navbar-brand" href="admin_dashboard.php">Admin Dashboard</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_users.php">Gérer les Utilisateurs</a>
+          <a class="nav-link" href="users/manage_users.php">Gérer les Utilisateurs</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_teachers.php">Gérer les Enseignants</a>
+          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les Enseignants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_students.php">Gérer les Étudiants</a>
+          <a class="nav-link" href="students/manage_students.php">Gérer les Étudiants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_quizzes.php">Gérer les Quiz</a>
+          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les Quiz</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_mediateque.php">Gérer la Médiathèque</a>
+          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_forum.php">Gérer le Forum</a>
+          <a class="nav-link" href="forum/manage_forum.php">Gérer le Forum</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="manages/manage_rules.php">Gérer les Règles</a>
+          <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="my_profile.php">Mon profil</a>
@@ -314,7 +500,7 @@ include '../../../public/templates/header.php';
     <div class="profile-header">
         <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
         <h1><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h1>
-        <p><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></p>
+        <p class="bio"><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></p>
         <button class="btn btn-primary btn-modifier-profile" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">Modifier le profil</button>
     </div>
 

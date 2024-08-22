@@ -99,5 +99,31 @@ class Question
         $stmt = $this->conn->prepare($query);
         $stmt->execute(array_merge([$quizId], $existingQuestionIds));
     }
+    public function createQuestion($quiz_id, $question_text)
+    {
+        $query = "INSERT INTO " . $this->table_name . " (quiz_id, question_text) VALUES (:quiz_id, :question_text)";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':quiz_id', $quiz_id);
+        $stmt->bindParam(':question_text', $question_text);
 
+        return $stmt->execute();
+    }
+
+    public function deleteQuestionsByQuizId($quiz_id)
+    {
+        $query = "DELETE FROM " . $this->table_name . " WHERE quiz_id = :quiz_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':quiz_id', $quiz_id);
+
+        return $stmt->execute();
+    }
+    public function getQuestionsByQuiz($quiz_id)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE quiz_id = :quiz_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':quiz_id', $quiz_id);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

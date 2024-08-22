@@ -1,6 +1,7 @@
-<footer class="bg-light text-center text-lg-start mt-4">
+<footer class="bg text-center text-lg-start mt-4">
         <div class="container p-4">
             <p>&copy; 2024 E-learning Abdu. Tous droits réservés.</p>
+            <p><a href="#">Politique de confidentialité</a> | <a href="#">Conditions d'utilisation</a></p>
         </div>
     </footer>
     <!-- Inclusion de jQuery (version complète, pas la version 'slim' qui ne supporte pas AJAX) -->
