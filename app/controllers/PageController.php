@@ -34,4 +34,12 @@ class PageController {
         $this->pageModel->setId($id);
         return $this->pageModel->deletePage();
     }
+    public function getPagesWithPagination($start, $limit) 
+    {
+        return $this->pageModel->getPagesWithPagination($start, $limit);
+    }
+    public function getTotalPages($limit) 
+    {
+        return $this->pageModel->getTotalPages($limit);
+    }
 }

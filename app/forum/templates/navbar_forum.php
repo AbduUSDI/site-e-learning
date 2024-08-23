@@ -15,7 +15,7 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
         switch ($roleId) {
           case 1:
-            $rolePage = '../index1.php';
+            $rolePage = '../auth/index.html';
             break;
           case 2:
             $rolePage = '../index2.php';
@@ -66,19 +66,19 @@ $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
             
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 1): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="../admin/index.php">Mon espace administrateur</a>
+                    <a class="nav-link" href="../views/admin/admin_dashboard.php">Mon espace administrateur</a>
                 </li>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 2): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="../teacher/index.php">Mon espace formateur</a>
+                    <a class="nav-link" href="../teacher/teacher_dashboard.php">Mon espace formateur</a>
                 </li>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['user']) && $_SESSION['user']['role_id'] == 3): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="../student/index.php">Mon espace apprenant</a>
+                    <a class="nav-link" href="../student/student_dashboard.php">Mon espace apprenant</a>
                 </li>
             <?php endif; ?>
       </ul>

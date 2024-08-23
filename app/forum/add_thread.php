@@ -1,32 +1,55 @@
 <?php
 session_start();
-if (!isset($_SESSION['user'])) {
-    header('Location: login.php');
+
+// Durée de vie de la session en secondes (30 minutes)
+$sessionLifetime = 1800;
+
+// Vérification que l'utilisateur est connecté et est un administrateur
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
+    header('Location: ../../login.php');
     exit;
 }
 
-require_once '../functions/Database.php';
-require_once '../functions/Forum.php';
+// Gestion de la durée de la session
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
+    session_unset();
+    session_destroy();
+    header('Location: ../../../auth/login.php');
+    exit;
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
+require_once '../../vendor/autoload.php';
+
+use App\Config\Database;
+use App\Controllers\UserController;
+use App\Controllers\ThreadController;
 
 $database = new Database();
-$db = $database->connect();
+$db = $database->getConnection();
 
-$thread = new Thread($db);
+$userController = new UserController($db);
+$threadController = new ThreadController($db);
 
+// Traitement du formulaire lorsqu'il est soumis
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $title = $_POST['title'];
     $body = $_POST['body'];
     $user_id = $_SESSION['user']['id'];
 
-    if ($thread->addThread($title, $body, $user_id)) {
+    // Utilisation de la méthode createPost pour créer un nouveau thread
+    if ($threadController->createThread($user_id, $title, $body, 'thread')) {
+        // Redirection vers la page d'accueil du forum après la création réussie du thread
         header('Location: index.php');
         exit;
     } else {
+        // Message d'erreur en cas d'échec de la création du thread
         $error_message = "Erreur lors de la création de la discussion. Veuillez réessayer.";
     }
 }
 
-include_once '../templates/header.php';
+include_once '../../public/templates/header.php';
 include_once 'templates/navbar_forum.php';
 ?>
 
@@ -37,8 +60,9 @@ h1,h2,h3 {
 
 body {
     background-image: url('../image/backgroundwebsite.jpg');
-    padding-top: 48px; /* Un padding pour régler le décalage à cause de la class fixed-top de la navbar */
+    padding-top: 48px; /* Un padding pour régler le décalage à cause de la classe fixed-top de la navbar */
 }
+
 h1, .mt-5 {
     background: whitesmoke;
     border-radius: 15px;
@@ -65,5 +89,4 @@ h1, .mt-5 {
     </form>
 </div>
 
-<?php include_once '../templates/footer.php'; ?>
-
+<?php include_once '../../public/templates/footer.php'; ?>

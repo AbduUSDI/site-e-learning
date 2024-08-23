@@ -25,15 +25,13 @@ require_once '../../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\QuizController;
-use App\Controllers\CourseController;
-use App\Controllers\ChapterController;
+use App\Controllers\FormationController;
 
 $database = new Database();
 $db = $database->getConnection();
 
 $quizController = new QuizController($db);
-$courseController = new CourseController($db);
-$chapterController = new ChapterController($db);
+$formationController = new FormationController($db);
 
 // Gestion des actions CRUD
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
@@ -43,17 +41,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
         case 'addQuiz':
             $titre = $_POST['titre'];
             $description = $_POST['description'];
-            $course_id = $_POST['course_id'];
+            $formation_id = $_POST['formation_id'];
             $questions = $_POST['questions'] ?? [];
-            $quizController->createQuizWithQuestions($titre, $description, $course_id, $questions);
+            $quizController->createQuizWithQuestions($titre, $description, $formation_id, $questions);
             break;
         case 'editQuiz':
             $id = $_POST['id'];
             $titre = $_POST['titre'];
             $description = $_POST['description'];
-            $course_id = $_POST['course_id'];
+            $formation_id = $_POST['formation_id'];
             $questions = $_POST['questions'] ?? [];
-            $quizController->updateQuizWithQuestions($id, $titre, $description, $course_id, $questions);
+            $quizController->updateQuizWithQuestions($id, $titre, $description, $formation_id, $questions);
             break;
         case 'deleteQuiz':
             $id = $_POST['id'];
@@ -63,8 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
 }
 
 $quizzes = $quizController->getAllQuizzes();
-$courses = $courseController->getAllCourses();
-$chapters = $chapterController->getAllChapters();
+$courses = $formationController->getAllFormations();
 
 include_once '../../../../public/templates/header.php';
 include_once '../navbar_admin.php';
@@ -300,10 +297,10 @@ include_once '../navbar_admin.php';
                         <textarea class="form-control" id="description" name="description" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="course_id" class="form-label">Sélectionnez un cours</label>
-                        <select class="form-control" id="course_id" name="course_id" required>
+                        <label for="formation_id" class="form-label">Sélectionnez un cours</label>
+                        <select class="form-control" id="formation_id" name="formation_id" required>
                             <?php foreach ($courses as $course): ?>
-                                <option value="<?php echo $course['id']; ?>"><?php echo $course['course_name']; ?></option>
+                                <option value="<?php echo $course['id']; ?>"><?php echo $course['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -352,10 +349,10 @@ include_once '../navbar_admin.php';
                         <textarea class="form-control" id="editQuizDescription" name="description" required></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="editCourseId" class="form-label">Sélectionnez un cours</label>
-                        <select class="form-control" id="editCourseId" name="course_id" required>
+                        <label for="editFormationId" class="form-label">Sélectionnez un cours</label>
+                        <select class="form-control" id="editFormationId" name="formation_id" required>
                             <?php foreach ($courses as $course): ?>
-                                <option value="<?php echo $course['id']; ?>"><?php echo $course['course_name']; ?></option>
+                                <option value="<?php echo $course['id']; ?>"><?php echo $course['name']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

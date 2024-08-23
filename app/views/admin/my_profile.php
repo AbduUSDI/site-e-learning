@@ -477,8 +477,16 @@ include '../../../public/templates/header.php';
         <li class="nav-item">
           <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="forum/manage_forum.php">Gérer le Forum</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+            Forum
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+          </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>
@@ -501,7 +509,7 @@ include '../../../public/templates/header.php';
         <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
         <h1><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h1>
         <p class="bio"><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></p>
-        <button class="btn btn-primary btn-modifier-profile" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">Modifier le profil</button>
+        <button class="btn btn-primary btn-modifier-profile" type="button" data-toggle="modal" data-target="#editProfileModal">Modifier le profil</button>
     </div>
 
     <div class="row">
@@ -512,7 +520,7 @@ include '../../../public/templates/header.php';
                     <p><strong>Nom d'utilisateur:</strong> <?php echo htmlspecialchars($currentUser['username']); ?></p>
                     <p><strong>Email:</strong> <?php echo htmlspecialchars($currentUser['email']); ?></p>
                     <p><strong>Date de naissance:</strong> <?php echo htmlspecialchars($userProfile['date_naissance']); ?></p>
-                    <button class="btn btn-primary btn-modifier-userprofile" type="button" data-bs-toggle="modal" data-bs-target="#editUserProfileModal" style="width: auto;">Modifier les informations profil</button>
+                    <button class="btn btn-primary btn-modifier-userprofile" type="button" data-toggle="modal" data-target="#editUserProfileModal" style="width: auto;">Modifier les informations profil</button>
                 </div>
                 <div class="sidebar-item">
                     <h3>Mes amis</h3>
@@ -548,7 +556,7 @@ include '../../../public/templates/header.php';
                                 <li class="list-group-item">
                                     <strong><?php echo htmlspecialchars($thread['title']); ?></strong>
                                     <div>
-                                        <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editThreadForm<?php echo $thread['id']; ?>">Modifier</button>
+                                        <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editThreadForm<?php echo $thread['id']; ?>">Modifier</button>
                                         <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce post ?');">
                                             <input type="hidden" name="action" value="delete_thread">
                                             <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
@@ -585,7 +593,7 @@ include '../../../public/templates/header.php';
                                 <li class="list-group-item">
                                     <p><?php echo htmlspecialchars(substr($response['body'], 0, 50)) . '...'; ?></p>
                                     <div>
-                                        <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editResponseForm<?php echo $response['id']; ?>">Modifier</button>
+                                        <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editResponseForm<?php echo $response['id']; ?>">Modifier</button>
                                         <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
                                             <input type="hidden" name="action" value="delete_response">
                                             <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
@@ -722,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var modifierButtons = document.querySelectorAll('.btn-modifier');
     modifierButtons.forEach(function(button) {
         button.addEventListener('click', function() {
-            var target = this.getAttribute('data-bs-target');
+            var target = this.getAttribute('data-target');
             var form = document.querySelector(target);
             if (form) {
                 var isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -735,7 +743,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var modifierProfileButton = document.querySelector('.btn-modifier-profile');
     if (modifierProfileButton) {
         modifierProfileButton.addEventListener('click', function() {
-            var target = this.getAttribute('data-bs-target');
+            var target = this.getAttribute('data-target');
             var modal = document.querySelector(target);
             if (modal) {
                 var modalInstance = new bootstrap.Modal(modal);
@@ -747,7 +755,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var modifierUserProfileButton = document.querySelector('.btn-modifier-userprofile');
     if (modifierUserProfileButton) {
         modifierUserProfileButton.addEventListener('click', function() {
-            var target = this.getAttribute('data-bs-target');
+            var target = this.getAttribute('data-target');
             var modal = document.querySelector(target);
             if (modal) {
                 var modalInstance = new bootstrap.Modal(modal);

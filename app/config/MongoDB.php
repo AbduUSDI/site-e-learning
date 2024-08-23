@@ -1,6 +1,10 @@
 <?php
+namespace App\Config;
+
 require 'vendor/autoload.php';
+
 use MongoDB\Client;
+use Exception;
 
 class MongoDB {
     private $mongoClient;
@@ -8,11 +12,11 @@ class MongoDB {
 
     public function __construct() {
         $uri = 'mongodb+srv://AbduUSDI:heroku123456@abdurahmanusdi.lc9y4uk.mongodb.net';
-        $databaseName = 'e-learning_forum';
+        $databaseName = 'e-learning';
 
         try {
             $this->mongoClient = new Client($uri);
-            $this->mongoCollection = $this->mongoClient->selectDatabase($databaseName)->views;
+            $this->mongoCollection = $this->mongoClient->selectDatabase($databaseName)->progression;
         } catch (Exception $erreur) {
             error_log("Erreur de connexion à MongoDB : " . $erreur->getMessage());
             throw new Exception("Impossible de se connecter à la base de données MongoDB");
@@ -22,8 +26,8 @@ class MongoDB {
         return $this->mongoClient->selectDatabase('e-learning_forum')->selectCollection($collectionName);
     }
     public function deleteThread($threadId) {
-        $collection = $this->getCollection('views');
-        $result = $collection->deleteOne(['thread_id' => (string)$threadId]);
+        $collection = $this->getCollection('progression');
+        $result = $collection->deleteOne(['progression_id' => (string)$threadId]);
         return $result->isAcknowledged();
     }
 }  

@@ -1,26 +1,42 @@
 <?php
 session_start();
-require_once '../functions/Database.php';
-require_once '../functions/User.php';
-require_once '../functions/Forum.php';
-require_once 'MongoDBForum.php';
 
-if (!isset($_SESSION['user'])) {
-    header('Location: ../login.php');
+// Durée de vie de la session en secondes (30 minutes)
+$sessionLifetime = 1800;
+
+// Vérification que l'utilisateur est connecté et est un administrateur
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
+    header('Location: ../../login.php');
     exit;
 }
 
-$database = new Database();
-$db = $database->connect();
+// Gestion de la durée de la session
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
+    session_unset();
+    session_destroy();
+    header('Location: ../../../auth/login.php');
+    exit;
+}
 
-$user = new User($db);
-$thread = new Thread($db);
-$response = new Response($db);
+$_SESSION['LAST_ACTIVITY'] = time();
+
+require_once '../../vendor/autoload.php';
+
+use App\Config\Database;
+use App\Controllers\UserController;
+use App\Controllers\ThreadController;
+use App\Config\MongoDBForum;
+
+$database = new Database();
+$db = $database->getConnection();
+
+$userController = new UserController($db);
+$threadController = new ThreadController($db);
 $mongoClient = new MongoDBForum();
 
 $threadId = $_GET['id'];
-$currentThread = $thread->getThreadById($threadId);
-$responses = $response->getResponsesByThreadId($threadId);
+$currentThread = $threadController->getThreadById($threadId);
+$responses = $threadController->getResponsesByThreadId($threadId);
 
 // Mise à jour des vues dans MongoDB
 $viewsCollection = $mongoClient->getCollection('views');
@@ -33,7 +49,8 @@ $viewsCollection->updateOne(
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $body = $_POST['body'];
     $userId = $_SESSION['user']['id'];
-    if ($response->createResponse($threadId, $userId, $body)) {
+    // Utilisation de la méthode createResponse
+    if ($threadController->createResponse($threadId, $userId, $body)) {
         header("Location: thread.php?id=$threadId");
         exit;
     } else {
@@ -41,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-include_once '../templates/header.php';
+include_once '../../public//templates/header.php';
 include_once 'templates/navbar_forum.php';
 ?>
 
@@ -63,7 +80,7 @@ h1, .mt-4 {
 <div class="container mt-4">
     <h1 class="my-4"><?php echo htmlspecialchars($currentThread['title']); ?></h1>
     <p><?php echo htmlspecialchars($currentThread['body']); ?></p>
-    <small class="text-muted">Par <?php echo htmlspecialchars($currentThread['author']); ?> le <?php echo $currentThread['created_at']; ?></small>
+    <small class="text-muted">Par <?php echo htmlspecialchars($currentThread['user_id']); ?> le <?php echo $currentThread['created_at']; ?></small>
 
     <h2 class="my-4">Réponses</h2>
     <?php if (isset($error)): ?>
@@ -73,7 +90,7 @@ h1, .mt-4 {
         <?php foreach ($responses as $response): ?>
             <li class="list-group-item">
                 <p><?php echo htmlspecialchars($response['body'], ENT_QUOTES, 'UTF-8'); ?></p>
-                <small class="text-muted">Par <?php echo htmlspecialchars($response['author'], ENT_QUOTES, 'UTF-8'); ?> le <?php echo htmlspecialchars($response['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
+                <small class="text-muted">Par <?php echo htmlspecialchars($response['user_id'], ENT_QUOTES, 'UTF-8'); ?> le <?php echo htmlspecialchars($response['created_at'], ENT_QUOTES, 'UTF-8'); ?></small>
             </li>
         <?php endforeach; ?>
     </ul>
@@ -88,4 +105,4 @@ h1, .mt-4 {
     </form>
 </div>
 
-<?php include_once '../templates/footer.php'; ?>
+<?php include_once '../../public/templates/footer.php'; ?>

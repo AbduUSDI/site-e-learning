@@ -241,8 +241,16 @@ include_once '../../../public/templates/header.php'; ?>
         <li class="nav-item">
           <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="forum/manage_forum.php">Gérer le Forum</a>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+            Forum
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+          </ul>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>

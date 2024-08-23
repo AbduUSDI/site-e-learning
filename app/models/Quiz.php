@@ -9,8 +9,7 @@ class Quiz
     private $table_name = "quizzes";
 
     private $id;
-    private $course_id;
-    private $chapter_id;
+    private $formation_id;
     private $quiz_name;
     private $description;
     private $created_at;
@@ -26,16 +25,10 @@ class Quiz
         $this->id = $id;
     }
 
-    public function setCourseId($course_id)
+    public function setFormationId($formation_id)
     {
-        $this->course_id = $course_id;
+        $this->formation_id = $formation_id;
     }
-
-    public function setChapterId($chapter_id)
-    {
-        $this->chapter_id = $chapter_id;
-    }
-
     public function setQuizName($quiz_name)
     {
         $this->quiz_name = $quiz_name;
@@ -52,16 +45,10 @@ class Quiz
         return $this->id;
     }
 
-    public function getCourseId()
+    public function getFormationId()
     {
-        return $this->course_id;
+        return $this->formation_id;
     }
-
-    public function getChapterId()
-    {
-        return $this->chapter_id;
-    }
-
     public function getQuizName()
     {
         return $this->quiz_name;
@@ -80,14 +67,14 @@ class Quiz
     {
         return $this->conn->lastInsertId();
     }
-    public function createQuiz($quiz_name, $description, $course_id = null)
+    public function createQuiz($quiz_name, $description, $formation_id = null)
     {
-        $query = "INSERT INTO " . $this->table_name . " (quiz_name, description, course_id) VALUES (:quiz_name, :description, :course_id)";
+        $query = "INSERT INTO " . $this->table_name . " (quiz_name, description, formation_id) VALUES (:quiz_name, :description, :formation_id)";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':quiz_name', $quiz_name);
         $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':course_id', $course_id);
+        $stmt->bindParam(':formation_id', $formation_id);
 
         if ($stmt->execute()) {
             return $this->conn->lastInsertId();
@@ -96,14 +83,14 @@ class Quiz
         return false;
     }
 
-    public function updateQuiz($id, $quiz_name, $description, $course_id = null)
+    public function updateQuiz($id, $quiz_name, $description, $formation_id = null)
     {
-        $query = "UPDATE " . $this->table_name . " SET quiz_name = :quiz_name, description = :description, course_id = :course_id WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " SET quiz_name = :quiz_name, description = :description, formation_id = :formation_id WHERE id = :id";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':quiz_name', $quiz_name);
         $stmt->bindParam(':description', $description);
-        $stmt->bindParam(':course_id', $course_id);
+        $stmt->bindParam(':formation_id', $formation_id);
         $stmt->bindParam(':id', $id);
 
         return $stmt->execute();

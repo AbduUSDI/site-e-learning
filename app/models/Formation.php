@@ -56,7 +56,7 @@ class Formation
     }
 
     // CRUD Methods
-    public function getAllFormations()
+    public function getAllFormations() : array
 {
     $query = "SELECT * FROM formations";
     $stmt = $this->conn->prepare($query);
@@ -76,6 +76,23 @@ class Formation
 
     return $formations;
 }
+
+public function getFormationsByUser($userId)
+{
+    $query = "
+        SELECT f.id, f.name, f.description 
+        FROM formations f
+        INNER JOIN user_formations uf ON f.id = uf.formation_id
+        WHERE uf.user_id = :user_id
+    ";
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC); // Doit retourner un tableau
+}
+
 private function getCategoriesByFormationId($formationId)
 {
     $query = "SELECT * FROM categories WHERE formation_id = :formation_id";
@@ -187,5 +204,32 @@ private function getPagesBySubCategoryId($subcategoryId)
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $this->id);
         return $stmt->execute();
+    }
+    // Méthode pour assigner une formation à un étudiant
+    public function assignFormationToStudent($userId, $formationId)
+    {
+        // Vérifier si l'utilisateur est déjà inscrit à cette formation
+        $query = "SELECT * FROM user_formations WHERE user_id = :user_id AND formation_id = :formation_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':formation_id', $formationId);
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+            return false; // L'utilisateur est déjà inscrit à cette formation
+        }
+
+        // Ajouter l'inscription à la formation
+        $query = "INSERT INTO user_formations (user_id, formation_id) VALUES (:user_id, :formation_id)";
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':formation_id', $formationId);
+
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

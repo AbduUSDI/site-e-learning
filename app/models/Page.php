@@ -60,7 +60,23 @@ class Page
     
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function getPagesWithPagination($start, $limit) {
+        $query = "SELECT * FROM pages LIMIT :start, :limit";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':start', $start, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
+    public function getTotalPages($limit) {
+        $query = "SELECT COUNT(*) as total FROM pages";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ceil($row['total'] / $limit);
+    }
+        
 
     public function createPage($title, $content, $video_url, $subcategory_id) {
         error_log("Données pour createPage: Title = $title, Content = $content, Video_URL = $video_url, SubCategory_ID = $subcategory_id");

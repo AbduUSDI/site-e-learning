@@ -15,15 +15,17 @@ class ThreadController
     }
 
     // Créer un nouveau thread
-    public function createThread($userId, $title, $body)
-    {
-        return $this->forumPost->createPost($userId, $body, 'thread', $title);
-    }
+    public function createThread($userId, $title, $body, $type)
+{
+    return $this->forumPost->createPost($userId, $title, $body, $type);
+}
 
-    // Répondre à un thread ou à une réponse
-    public function replyToPost($userId, $body, $parentId)
+
+    // Méthode pour créer une réponse à un thread
+    public function createResponse($threadId, $userId, $body)
     {
-        return $this->forumPost->createPost($userId, $body, 'reply', null, $parentId);
+        // Appelle la méthode createResponse du modèle Thread
+        return $this->forumPost->createResponse($threadId, $userId, $body);
     }
 
     // Récupérer tous les threads
@@ -37,7 +39,11 @@ class ThreadController
     {
         return $this->forumPost->getResponses($threadId);
     }
-
+    public function getResponsesByThreadId($threadId)
+    {
+        return $this->forumPost->getResponsesByThreadId($threadId);
+    }
+    
     // Mettre à jour un post (thread ou réponse)
     public function updatePost($postId, $title, $body)
     {
@@ -52,5 +58,9 @@ class ThreadController
     public function getThreadsByUserId($user_id)
     {
         return $this->forumPost->getThreadsByUserId($user_id);
+    }
+    public function getThreadById($id) 
+    {
+        return $this->forumPost->getThreadById($id);
     }
 }

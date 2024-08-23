@@ -40,4 +40,13 @@ class FormationController
         $this->formationModel->setId($id);
         return $this->formationModel->deleteFormation();
     }
+    public function getFormationsByUser($userId)
+    {
+        return $this->formationModel->getFormationsByUser($userId);
+    }
+    // Méthode pour assigner une formation à un étudiant
+    public function assignFormationToStudent($userId, $formationId)
+    {
+        return $this->formationModel->assignFormationToStudent($userId, $formationId);
+    }
 }

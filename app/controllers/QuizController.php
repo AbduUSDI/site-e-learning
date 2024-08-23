@@ -20,13 +20,13 @@ class QuizController
         $this->answerModel = new Answer($db);
     }
 
-    public function createQuizWithQuestions($quizName, $description, $courseId, $questions)
+    public function createQuizWithQuestions($quizName, $description, $formationId, $questions)
 {
     // Créer le quiz
     $this->quizModel->setQuizName($quizName);
     $this->quizModel->setDescription($description);
-    $this->quizModel->setCourseId($courseId);
-    $this->quizModel->createQuiz($quizName, $description, $courseId);
+    $this->quizModel->setFormationId($formationId);
+    $this->quizModel->createQuiz($quizName, $description, $formationId);
 
     // Récupérer l'ID du quiz nouvellement créé
     $quizId = $this->quizModel->getLastInsertId();
@@ -53,14 +53,14 @@ class QuizController
 }
 
 
-public function updateQuizWithQuestions($quizId, $quizName, $description, $courseId, $questions)
+public function updateQuizWithQuestions($quizId, $quizName, $description, $formationId, $questions)
 {
     // Mettre à jour le quiz
     $this->quizModel->setId($quizId);
     $this->quizModel->setQuizName($quizName);
     $this->quizModel->setDescription($description);
-    $this->quizModel->setCourseId($courseId);
-    $this->quizModel->updateQuiz($quizId, $quizName, $description, $courseId);
+    $this->quizModel->setFormationId($formationId);
+    $this->quizModel->updateQuiz($quizId, $quizName, $description, $formationId);
 
     foreach ($questions as $question) {
         if (isset($question['id']) && !empty($question['id'])) {

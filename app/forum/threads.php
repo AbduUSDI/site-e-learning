@@ -1,23 +1,40 @@
 <?php
 session_start();
-require_once '../functions/Database.php';
-require_once '../functions/User.php';
-require_once '../functions/Forum.php';
 
-if (!isset($_SESSION['user'])) {
-    header('Location: login.php');
+// Durée de vie de la session en secondes (30 minutes)
+$sessionLifetime = 1800;
+
+// Vérification que l'utilisateur est connecté et est un administrateur
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
+    header('Location: ../../login.php');
     exit;
 }
 
+// Gestion de la durée de la session
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
+    session_unset();
+    session_destroy();
+    header('Location: ../../../auth/login.php');
+    exit;
+}
+
+$_SESSION['LAST_ACTIVITY'] = time();
+
+require_once '../../vendor/autoload.php';
+
+use App\Config\Database;
+use App\Controllers\UserController;
+use App\Controllers\ThreadController;
+
 $database = new Database();
-$db = $database->connect();
+$db = $database->getConnection();
 
-$thread = new Thread($db);
-$response = new Response($db);
+$userController = new UserController($db);
+$threadController = new ThreadController($db);
 
-$threads = $thread->getThreads();
+$threads = $threadController->getAllThreads();
 
-include_once '../templates/header.php';
+include_once '../../public/templates/header.php';
 include_once 'templates/navbar_forum.php';
 ?>
 
@@ -47,7 +64,7 @@ h1, .mt-5 {
                     <li class="list-group-item">
                         <h5><a href="thread.php?id=<?php echo $thread['id']; ?>"><?php echo htmlspecialchars($thread['title']); ?></a></h5>
                         <p><?php echo htmlspecialchars($thread['body']); ?></p>
-                        <small class="text-muted">Par <?php echo htmlspecialchars($thread['author']); ?> le <?php echo $thread['created_at']; ?></small>
+                        <small class="text-muted">Par <?php echo htmlspecialchars($thread['user_id']); ?> le <?php echo $thread['created_at']; ?></small>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -55,6 +72,6 @@ h1, .mt-5 {
     </div>
 </div>
 
-<?php include_once '../templates/footer.php'; ?>
+<?php include_once '../../public/templates/footer.php'; ?>
 
 

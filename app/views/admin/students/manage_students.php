@@ -15,7 +15,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../../public/login.php');
+    header('Location: ../../../auth/login.php');
     exit;
 }
 
@@ -25,19 +25,19 @@ require_once '../../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\UserController;
-use App\Controllers\CourseController;
+use App\Controllers\FormationController;
 use App\Controllers\MessageController;
 
 $database = new Database();
 $db = $database->getConnection();
 
 $userController = new UserController($db);
-$courseController = new CourseController($db);
+$formationController = new FormationController($db);
 $messageController = new MessageController($db);
 
 // Récupération des apprenants
 $students = $userController->getUsersByRole(3);
-$courses = $courseController->getAllCourses();
+$formations = $formationController->getAllFormations();
 
 include_once '../../../../public/templates/header.php';
 include_once '../navbar_admin.php';
@@ -203,27 +203,24 @@ include_once '../navbar_admin.php';
         font-size: 1.25rem;
     }
     .navbar-toggler {
-    background-color: #fff; /* Changer la couleur de fond du bouton */
-    border: none; /* Supprimer les bordures */
-    outline: none; /* Supprimer l'outline */
+        background-color: #fff;
+        border: none;
+        outline: none;
     }
 
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        /* Remplacer la couleur de l'icône par une couleur plus foncée */
-        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
     }
 
     .navbar-toggler:focus {
-        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+        outline: none;
     }
+
     .navbar-toggler-icon {
         width: 25px;
         height: 25px;
     }
 </style>
-
-
 
 <div class="container mt-5">
     <br>
@@ -252,10 +249,10 @@ include_once '../navbar_admin.php';
                                 <td><?php echo htmlspecialchars($student['email']); ?></td>
                                 <td>
                                     <?php
-                                    $assignedCourses = $courseController->getCoursesByStudent($student['id']);
-                                    if (!empty($assignedCourses)) {
-                                        foreach ($assignedCourses as $course) {
-                                            echo htmlspecialchars($course['course_name']) . '<br>';
+                                    $assignedFormation = $formationController->getFormationsByUser($student['id']);
+                                    if (!empty($assignedFormation)) {
+                                        foreach ($assignedFormation as $formation) {
+                                            echo htmlspecialchars_decode($formation['name']) . '<br>';
                                         }
                                     } else {
                                         echo 'Aucun cours assigné';
@@ -265,7 +262,7 @@ include_once '../navbar_admin.php';
                                 <td>
                                     <button class="btn btn-primary btn-sm btn-profile" data-id="<?php echo $student['id']; ?>" data-toggle="modal" data-target="#profileModal">Voir le Profil</button>
                                     <button class="btn btn-secondary btn-sm btn-message" data-id="<?php echo $student['id']; ?>" data-toggle="modal" data-target="#messageModal">Envoyer un Message</button>
-                                    <button class="btn btn-success btn-sm btn-course" data-id="<?php echo $student['id']; ?>" data-toggle="modal" data-target="#courseModal">Ajouter une Formation</button>
+                                    <button class="btn btn-success btn-sm btn-formation" data-id="<?php echo $student['id']; ?>" data-toggle="modal" data-target="#formationModal">Ajouter une Formation</button>
                                     <button class="btn btn-warning btn-sm btn-validate" data-id="<?php echo $student['id']; ?>" data-toggle="modal" data-target="#validateModal">Valider le Cursus</button>
                                 </td>
                             </tr>
@@ -307,7 +304,7 @@ include_once '../navbar_admin.php';
                 <form id="messageForm">
                     <div class="form-group">
                         <label for="messageStudentId">Étudiant</label>
-                        <select id="messageStudentId" class="form-control" name="student_id">
+                        <select id="messageStudentId" class="form-control" name="user_id">
                             <?php foreach ($students as $student): ?>
                                 <option value="<?php echo $student['id']; ?>"><?php echo htmlspecialchars($student['username']); ?></option>
                             <?php endforeach; ?>
@@ -324,30 +321,30 @@ include_once '../navbar_admin.php';
     </div>
 </div>
 
-<div class="modal fade" id="courseModal" tabindex="-1" role="dialog" aria-labelledby="courseModalLabel" aria-hidden="true">
+<div class="modal fade" id="formationModal" tabindex="-1" role="dialog" aria-labelledby="formationModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="courseModalLabel">Ajouter une Formation</h5>
+                <h5 class="modal-title" id="formationModalLabel">Ajouter une Formation</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="courseForm">
+                <form id="formationForm">
                     <div class="form-group">
-                        <label for="courseStudentId">Étudiant</label>
-                        <select id="courseStudentId" class="form-control" name="student_id">
+                        <label for="formationStudentId">Étudiant</label>
+                        <select id="formationStudentId" class="form-control" name="student_id">
                             <?php foreach ($students as $student): ?>
                                 <option value="<?php echo $student['id']; ?>"><?php echo htmlspecialchars($student['username']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="courseId">Nom de la Formation</label>
-                        <select id="courseId" class="form-control" name="course_id">
-                            <?php foreach ($courses as $course): ?>
-                                <option value="<?php echo $course['id']; ?>"><?php echo htmlspecialchars($course['course_name']); ?></option>
+                        <label for="formationId">Nom de la Formation</label>
+                        <select id="formationId" class="form-control" name="formation_id">
+                            <?php foreach ($formations as $formation): ?>
+                                <option value="<?php echo $formation['id']; ?>"><?php echo htmlspecialchars($formation['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -363,7 +360,7 @@ include_once '../navbar_admin.php';
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="validateModalLabel">Valider le Cursus</h5>
+                <h5 class="modal-title" id="validateModalLabel">Valider l'obtention de la formation</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -394,7 +391,7 @@ include_once '../navbar_admin.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Gérer le formulaire de message
+    // Gestion le formulaire de message
     const messageForm = document.getElementById('messageForm');
     messageForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -407,32 +404,32 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             alert(data.message);
             if (data.status === 'success') {
-                messageForm.reset(); // Vider le formulaire après envoi
+                messageForm.reset();
             }
         })
         .catch(error => console.error('Erreur:', error));
     });
 
-    // Gérer le formulaire d'ajout de formation
-const courseForm = document.getElementById('courseForm');
-courseForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const formData = new FormData(courseForm);
-    fetch('assign_course_to_student.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        if (data.status === 'success') {
-            courseForm.reset(); // Vider le formulaire après envoi
-        }
-    })
-    .catch(error => console.error('Erreur:', error));
-});
+    // Gestion le formulaire d'ajout de formation
+    const formationForm = document.getElementById('formationForm');
+    formationForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(formationForm);
+        fetch('assign_course_to_student.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.status === 'success') {
+                formationForm.reset();
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    });
 
-    // Gérer le formulaire de validation du cursus
+    // Gestion le formulaire de validation du cursus
     const validateForm = document.getElementById('validateForm');
     validateForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -445,12 +442,13 @@ courseForm.addEventListener('submit', function (e) {
         .then(data => {
             alert(data.message);
             if (data.status === 'success') {
-                validateForm.reset(); // Vider le formulaire après envoi
+                validateForm.reset();
             }
         })
         .catch(error => console.error('Erreur:', error));
     });
 });
+
 </script>
 
 <?php include '../../../../public/templates/footer.php'; ?>

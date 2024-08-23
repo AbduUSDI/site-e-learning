@@ -231,55 +231,74 @@ switch ($action) {
         }
         break;
 
-    case 'save_page':
-        $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-        $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $subcategory_id = filter_input(INPUT_POST, 'subcategory_id', FILTER_VALIDATE_INT);
-        $video_url = filter_input(INPUT_POST, 'video_url', FILTER_VALIDATE_URL);
+        case 'get_pages':
+            $page = filter_input(INPUT_POST, 'page', FILTER_VALIDATE_INT) ?: 1;
+            $limit = filter_input(INPUT_POST, 'limit', FILTER_VALIDATE_INT) ?: 5;
+        
+            $start = ($page - 1) * $limit;
+        
+            $pages = $pageController->getPagesWithPagination($start, $limit);
+            $totalPages = $pageController->getTotalPages($limit);
+        
+            echo json_encode(['pages' => $pages, 'totalPages' => $totalPages]);
+            break;
+        
 
-        $currentVideoUrl = null;
-        if ($id) {
-            $currentPage = $pageController->getPageById($id);
-            if ($currentPage) {
-                $currentVideoUrl = $currentPage['video_url'];
+        case 'save_page':
+            $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+            $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $subcategory_id = filter_input(INPUT_POST, 'subcategory_id', FILTER_VALIDATE_INT);
+            $video_url = filter_input(INPUT_POST, 'video_url', FILTER_VALIDATE_URL);
+        
+            // Récupérer l'URL actuelle de la vidéo si elle existe déjà
+            $currentVideoUrl = null;
+            if ($id) {
+                $currentPage = $pageController->getPageById($id);
+                if ($currentPage) {
+                    $currentVideoUrl = $currentPage['video_url'];
+                }
             }
-        }
-
-        if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
-            $fileTmpPath = $_FILES['video']['tmp_name'];
-            $fileName = $_FILES['video']['name'];
-            $uploadFileDir = '../../../../public/image_and_video/mp4/';
-            $dest_path = $uploadFileDir . $fileName;
-
-            if (!move_uploaded_file($fileTmpPath, $dest_path)) {
-                echo json_encode(['status' => 'error', 'message' => 'File upload failed.']);
+        
+            // Gestion de l'upload de fichier vidéo
+            if (isset($_FILES['video']) && $_FILES['video']['error'] === UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES['video']['tmp_name'];
+                $fileName = $_FILES['video']['name'];
+                $uploadFileDir = '../../../../public/image_and_video/mp4/';
+                $dest_path = $uploadFileDir . $fileName;
+        
+                if (!move_uploaded_file($fileTmpPath, $dest_path)) {
+                    echo json_encode(['status' => 'error', 'message' => 'File upload failed.']);
+                    exit;
+                }
+                $video_url = $dest_path;  // Mettre à jour l'URL de la vidéo avec le nouveau chemin de fichier
+            } elseif (empty($video_url)) {
+                // Si l'utilisateur n'a pas fourni de nouvelle URL vidéo ou uploadé un nouveau fichier, conserver l'URL actuelle
+                $video_url = $currentVideoUrl;
+            }
+        
+            // Validation des données
+            if (!$title || !$content || !$subcategory_id) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input.']);
                 exit;
             }
-            $video_url = $dest_path;
-        } elseif (empty($video_url)) {
-            $video_url = $currentVideoUrl;
-        }
-
-        if (!$title || !$content || !$subcategory_id) {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'Invalid input.']);
-            exit;
-        }
-
-        if ($id) {
-            $success = $pageController->updatePage($id, $title, $content, $video_url, $subcategory_id);
-        } else {
-            $success = $pageController->createPage($title, $content, $video_url, $subcategory_id);
-        }
-
-        if ($success) {
-            echo json_encode(['status' => 'success']);
-        } else {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => 'Failed to save page.']);
-        }
-        break;
+        
+            // Mise à jour ou création de la page
+            if ($id) {
+                $success = $pageController->updatePage($id, $title, $content, $video_url, $subcategory_id);
+            } else {
+                $success = $pageController->createPage($title, $content, $video_url, $subcategory_id);
+            }
+        
+            // Réponse JSON
+            if ($success) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                http_response_code(500);
+                echo json_encode(['status' => 'error', 'message' => 'Failed to save page.']);
+            }
+            break;        
 
     case 'delete_page':
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
