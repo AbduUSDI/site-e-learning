@@ -29,19 +29,19 @@ class Message
         $this->receiver_id = $receiver_id;
     }
 
-    public function setContent($content)
+    public function setBody($body)
     {
-        $this->content = $content;
+        $this->body= $body;
     }
 
-    public function save()
+    public function save($senderId, $receiverId, $body)
     {
-        $query = "INSERT INTO " . $this->table_name . " (sender_id, receiver_id, content, created_at) VALUES (:sender_id, :receiver_id, :content, NOW())";
+        $query = "INSERT INTO " . $this->table_name . " (sender_id, receiver_id, body, created_at) VALUES (:sender_id, :receiver_id, :body, NOW())";
         $stmt = $this->conn->prepare($query);
 
-        $stmt->bindParam(':sender_id', $this->sender_id, PDO::PARAM_INT);
-        $stmt->bindParam(':receiver_id', $this->receiver_id, PDO::PARAM_INT);
-        $stmt->bindParam(':content', $this->content, PDO::PARAM_STR);
+        $stmt->bindParam(':sender_id', $senderId, PDO::PARAM_INT);
+        $stmt->bindParam(':receiver_id', $receiverId, PDO::PARAM_INT);
+        $stmt->bindParam(':body', $body, PDO::PARAM_STR);
 
         return $stmt->execute();
     }

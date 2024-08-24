@@ -7,7 +7,7 @@ $sessionLifetime = 1800;
 
 // Vérification que l'utilisateur est connecté et est un administrateur
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
-    header('Location: ../../login.php');
+    header('Location: ../../../auth/login.php');
     exit;
 }
 
@@ -229,9 +229,9 @@ include_once '../navbar_admin.php';
     <hr>
     <br>
     <div class="row">
+        <h2 class="text-white">Liste des Étudiants</h2>
         <!-- Liste des Étudiants -->
         <div class="container hero">
-            <h2>Liste des Étudiants</h2>
             <div class="table-responsive">
                 <table class="table table-bordered">
                     <thead class="thead-dark">
@@ -304,9 +304,9 @@ include_once '../navbar_admin.php';
                 <form id="messageForm">
                     <div class="form-group">
                         <label for="messageStudentId">Étudiant</label>
-                        <select id="messageStudentId" class="form-control" name="user_id">
+                        <select id="messageStudentId" class="form-control" name="student_id">
                             <?php foreach ($students as $student): ?>
-                                <option value="<?php echo $student['id']; ?>"><?php echo htmlspecialchars($student['username']); ?></option>
+                                <option value="<?php echo $student['id']; ?>"><?php echo htmlspecialchars_decode($student['username']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -331,20 +331,20 @@ include_once '../navbar_admin.php';
                 </button>
             </div>
             <div class="modal-body">
-                <form id="formationForm">
-                    <div class="form-group">
-                        <label for="formationStudentId">Étudiant</label>
-                        <select id="formationStudentId" class="form-control" name="student_id">
-                            <?php foreach ($students as $student): ?>
-                                <option value="<?php echo $student['id']; ?>"><?php echo htmlspecialchars($student['username']); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                <form id="formationFormulaire">
+                <div class="form-group">
+                    <label for="formationStudentId">Étudiant</label>
+                    <select id="formationStudentId" class="form-control" name="user_id">
+                        <?php foreach ($students as $user): ?>
+                            <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars_decode($user['username']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                     <div class="form-group">
                         <label for="formationId">Nom de la Formation</label>
                         <select id="formationId" class="form-control" name="formation_id">
                             <?php foreach ($formations as $formation): ?>
-                                <option value="<?php echo $formation['id']; ?>"><?php echo htmlspecialchars($formation['name']); ?></option>
+                                <option value="<?php echo $formation['id']; ?>"><?php echo htmlspecialchars_decode($formation['name']); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -388,8 +388,27 @@ include_once '../navbar_admin.php';
         </div>
     </div>
 </div>
-
+    <!-- Inclusion de jQuery (version complète, pas la version 'slim' qui ne supporte pas AJAX) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
+    $(document).ready(function() {
+    $('.btn-profile').on('click', function() {
+        var userId = $(this).data('id');
+
+        $.ajax({
+            url: 'get_profile.php',  // Fichier PHP qui va traiter la requête AJAX
+            type: 'GET',
+            data: { user_id: userId },
+            success: function(response) {
+                // Insère la réponse (le contenu du profil) dans la modal
+                $('#profileModal .modal-body').html(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Erreur AJAX: ' + status + ' - ' + error);
+            }
+        });
+    });
+});
 document.addEventListener('DOMContentLoaded', function () {
     // Gestion le formulaire de message
     const messageForm = document.getElementById('messageForm');
@@ -405,13 +424,15 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(data.message);
             if (data.status === 'success') {
                 messageForm.reset();
+                $('#messageModal').modal('hide');
+                location.reload();
             }
         })
         .catch(error => console.error('Erreur:', error));
     });
 
     // Gestion le formulaire d'ajout de formation
-    const formationForm = document.getElementById('formationForm');
+    const formationForm = document.getElementById('formationFormulaire');
     formationForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const formData = new FormData(formationForm);
@@ -424,6 +445,8 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(data.message);
             if (data.status === 'success') {
                 formationForm.reset();
+                $('#formationModal').modal('hide');
+                location.reload();
             }
         })
         .catch(error => console.error('Erreur:', error));
@@ -443,6 +466,8 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(data.message);
             if (data.status === 'success') {
                 validateForm.reset();
+                $('#validateModal').modal('hide');
+                location.reload();
             }
         })
         .catch(error => console.error('Erreur:', error));

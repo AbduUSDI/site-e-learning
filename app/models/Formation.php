@@ -1,6 +1,7 @@
 <?php
 namespace App\Models;
 
+use App\Models\Progress;
 use PDO;
 
 class Formation
@@ -12,10 +13,12 @@ class Formation
     private $name;
     private $description;
     private $created_at;
+    private $progress;
 
     public function __construct($db)
     {
         $this->conn = $db;
+        $this->progress = new Progress($db);
     }
 
     // Setters
@@ -208,28 +211,48 @@ private function getPagesBySubCategoryId($subcategoryId)
     // Méthode pour assigner une formation à un étudiant
     public function assignFormationToStudent($userId, $formationId)
     {
-        // Vérifier si l'utilisateur est déjà inscrit à cette formation
-        $query = "SELECT * FROM user_formations WHERE user_id = :user_id AND formation_id = :formation_id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':user_id', $userId);
-        $stmt->bindParam(':formation_id', $formationId);
-        $stmt->execute();
-
-        if ($stmt->rowCount() > 0) {
-            return false; // L'utilisateur est déjà inscrit à cette formation
-        }
-
         // Ajouter l'inscription à la formation
         $query = "INSERT INTO user_formations (user_id, formation_id) VALUES (:user_id, :formation_id)";
         $stmt = $this->conn->prepare($query);
 
-        $stmt->bindParam(':user_id', $userId);
-        $stmt->bindParam(':formation_id', $formationId);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':formation_id', $formationId, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             return true;
         } else {
             return false;
         }
+    }
+    public function getStudentProgress($userId, $formationId) {
+        $totalCategories = $this->getTotalCategoriesByFormation($formationId);
+        $completedCategories = $this->getCompletedCategoriesByUser($userId, $formationId);
+
+        if ($totalCategories === 0) {
+            return 0;
+        }
+
+        return ($completedCategories / $totalCategories) * 100;
+    }
+
+    private function getTotalCategoriesByFormation($formationId) {
+        $query = "SELECT COUNT(*) as total FROM categories WHERE formation_id = :formation_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':formation_id', $formationId);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+
+    private function getCompletedCategoriesByUser($userId, $formationId) {
+        $query = "SELECT COUNT(*) as completed FROM category_progress cp
+                  JOIN categories c ON cp.category_id = c.id
+                  WHERE cp.user_id = :user_id AND c.formation_id = :formation_id AND cp.status = 'completed'";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':formation_id', $formationId);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC)['completed'];
     }
 }

@@ -1,26 +1,41 @@
 <?php
 session_start();
-require_once '../functions/Database.php';
-require_once '../functions/User.php';
-require_once '../functions/Forum.php';
-require_once 'MongoDBForum.php';
 
-// Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['user'])) {
-    header('Location: ../login.php');
+// Durée de vie de la session en secondes (30 minutes)
+$sessionLifetime = 1800;
+
+// Vérification que l'utilisateur est connecté et a un rôle autorisé (1, 2, 3)
+$allowedRoles = [1, 2, 3];
+
+if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowedRoles)) {
+    header('Location: ../../login.php');
     exit;
 }
 
-$database = new Database();
-$db = $database->connect();
+// Gestion de la durée de la session
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
+    session_unset();
+    session_destroy();
+    header('Location: ../../../auth/login.php');
+    exit;
+}
 
-$user = new User2($db);
-$thread = new Thread($db);
-$response = new Response($db);
+$_SESSION['LAST_ACTIVITY'] = time();
+
+require_once '../../vendor/autoload.php';
+
+use App\Config\Database;
+use App\Controllers\ThreadController;
+use App\Config\MongoDBForum;
+
+$database = new Database();
+$db = $database->getConnection();
+
+$threadController = new ThreadController($db);
 $mongoClient = new MongoDBForum();
 
-$userId = $_SESSION['user']['id'];
-$currentUser = $user->getUserById($userId);
+$userId = $_SESSION['user']['id']; // ID de l'utilisateur connecté
+$userThreads = $threadController->getThreadsByUserId($userId);
 
 // Gestion des actions CRUD
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -37,22 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_STRING);
                 
                     if ($id && $title && $body) {
-                        $result = $thread->updateThread($id, $title, $body);
+                        $result = $threadController->updatePost($id, $title, $body);
                         $message = $result ? "Discussion mise à jour avec succès." : "Erreur lors de la mise à jour de la discussion.";
                     } else {
                         $message = "Tous les champs sont requis pour mettre à jour une discussion.";
-                    }
-                    break;
-
-                case 'update_response':
-                    $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-                    $body = $_POST['body'];
-                    
-                    if ($id && $body) {
-                        $result = $response->updateResponse($id, $body);
-                        $message = $result ? "Commentaire mise à jour avec succès." : "Erreur lors de la mise à jour du commentaire.";
-                    } else {
-                        $message = "Tous les champs sont requis pour mettre à jour un commentaire.";
                     }
                     break;
 
@@ -60,21 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
                     
                     if ($id) {
-                        $result = $thread->deleteThread($id) && $mongoClient->deleteThread($id);
+                        $result = $threadController->deletePost($id) && $mongoClient->deleteThread($id);
                         $message = $result ? "Discussion supprimée avec succès." : "Erreur lors de la suppression de la discussion.";
                     } else {
                         $message = "ID de la discussion invalide pour la suppression.";
-                    }
-                    break;
-
-                case 'delete_response':
-                    $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-                    
-                    if ($id) {
-                        $result = $response->deleteResponse($id);
-                        $message = $result ? "Réponse supprimée avec succès." : "Erreur lors de la suppression de la réponse.";
-                    } else {
-                        $message = "ID de réponse invalide pour la suppression.";
                     }
                     break;
 
@@ -94,53 +86,175 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$userThreads = $thread->getThreadsByUserId($userId);
-$userResponses = $response->getResponsesByUserId($userId);
-
-include '../templates/header.php';
+include '../../public/templates/header.php';
 include 'templates/navbar_forum.php';
 ?>
 
 <style>
     body {
-        background-image: url('../image/background.jpg');
-        padding-top: 48px;
+        background: url('../../public/image_and_video/gif/anim_background2.gif');
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 0;
     }
-    h1, h2, h3 {
+
+    .navbar {
+        background-color: #343a40;
+        padding: 10px 0;
+    }
+
+    .navbar a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: bold;
+        margin: 0 15px;
+    }
+
+    .navbar a:hover {
+        text-decoration: underline;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    h1 {
         text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+    }
+
+    .threads-section {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .threads-list, .active-threads {
+        width: 48%;
+    }
+
+    .card {
+        margin-bottom: 20px;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 10px 15px;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        font-weight: bold;
+    }
+
+    .card-body {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
         color: #333;
     }
-    .container {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 20px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    .card-text {
+        color: #555;
     }
-    .form-control, .btn, .alert {
-        border-radius: 5px;
+
+    .card-footer {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        text-align: right;
     }
-    .alert {
-        margin-top: 20px;
+
+    .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
     }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .btn-warning, .btn-danger {
+        margin-left: 5px;
+    }
+
     .list-group-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+
+    .hero {
+        background: url('../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background-size: cover;
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-bottom: 40px;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .hero p {
+        font-size: 1.25rem;
+    }
+
+    .navbar-toggler {
+        background-color: #fff;
+        border: none;
+        outline: none;
+    }
+
+    .navbar-toggler-icon {
+        width: 25px;
+        height: 25px;
+    }
+
+    .dropdown-menu {
+        background-image: url(../../public/image_and_video/gif/anim_background.gif);
+    }
+    .table {
+        background: whitesmoke;
     }
 </style>
 
 <div class="container mt-5">
-    <h1>Mes threads</h1>
+    <h1>Mes Threads</h1>
     <?php if (empty($userThreads)): ?>
-        <p>Vous n'avez pas encore créé de thread.</p>
+        <p class="text-white">Vous n'avez pas encore créé de thread.</p>
     <?php else: ?>
-        <table class="table">
-            <thead>
+        <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
                 <tr>
-                    <th>Titre</th>
-                    <th>Date de création</th>
-                    <th>Actions</th>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Date de création</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -149,7 +263,7 @@ include 'templates/navbar_forum.php';
                     <td><?php echo htmlspecialchars($thread['title']); ?></td>
                     <td><?php echo $thread['created_at']; ?></td>
                     <td>
-                        <button class="btn btn-warning btn-modifier" type="button" data-bs-toggle="collapse" data-bs-target="#editThreadForm<?php echo $thread['id']; ?>" aria-expanded="false" aria-controls="editThreadForm<?php echo $thread['id']; ?>">
+                        <button class="btn btn-warning btn-sm btn-modifier" type="button" data-toggle="collapse" data-target="#editThreadForm<?php echo $thread['id']; ?>" aria-expanded="false" aria-controls="editThreadForm<?php echo $thread['id']; ?>">
                             Modifier
                         </button>
                         <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce thread ?');">
@@ -162,7 +276,7 @@ include 'templates/navbar_forum.php';
                 <tr>
                     <td colspan="3">
                         <div class="collapse" id="editThreadForm<?php echo $thread['id']; ?>">
-                            <form action="my_profile.php" method="POST">
+                            <form action="my_threads.php" method="POST">
                                 <input type="hidden" name="action" value="update_thread">
                                 <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
                                 <div class="form-group">
@@ -181,76 +295,9 @@ include 'templates/navbar_forum.php';
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     <?php endif; ?>
-    <a href="add_thread.php" class="btn btn-info">Créer un nouveau thread</a>
+    <a href="add_thread.php" class="btn btn-info mt-3">Créer un nouveau thread</a>
 </div>
 
-<div class="container mt-5">
-    <h2>Mes réponses</h2>
-    <?php if (empty($userResponses)): ?>
-        <p>Vous n'avez pas encore fait de réponse.</p>
-    <?php else: ?>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Contenu</th>
-                    <th>Date de création</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($userResponses as $response): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars(substr($response['body'], 0, 50)) . '...'; ?></td>
-                        <td><?php echo $response['created_at']; ?></td>
-                        <td>
-                            <button class="btn btn-warning btn-modifier" type="button" data-bs-toggle="collapse" data-bs-target="#editResponseForm<?php echo $response['id']; ?>" aria-expanded="false" aria-controls="editResponseForm<?php echo $response['id']; ?>">
-                                Modifier
-                            </button>
-                            <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
-                                <input type="hidden" name="action" value="delete_response">
-                                <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
-                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                            <div class="collapse" id="editResponseForm<?php echo $response['id']; ?>">
-                                <form action="my_profile.php" method="POST">
-                                    <input type="hidden" name="action" value="update_response">
-                                    <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
-                                    <div class="form-group">
-                                        <label for="body<?php echo $response['id']; ?>">Contenu</label>
-                                        <textarea class="form-control" id="body<?php echo $response['id']; ?>" name="body" required><?php echo htmlspecialchars($response['body'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-success mt-2">Enregistrer les modifications</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var modifierButtons = document.querySelectorAll('.btn-modifier');
-    modifierButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            var target = this.getAttribute('data-bs-target');
-            var form = document.querySelector(target);
-            if (form) {
-                var isExpanded = this.getAttribute('aria-expanded') === 'true';
-                this.setAttribute('aria-expanded', !isExpanded);
-                form.classList.toggle('show');
-            }
-        });
-    })});
-</script>
-
-<script src="https://kit.fontawesome.com/a076d05399.js"></script>
-
-<?php include '../templates/footer.php'; ?>
+<?php include '../../public/templates/footer.php'; ?>

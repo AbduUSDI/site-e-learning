@@ -123,4 +123,59 @@ class Quiz
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    public function saveUserScore($quizId, $userId, $score)
+{
+    // Vérifiez si un enregistrement existe déjà pour cet utilisateur et ce quiz
+    $existingResult = $this->getUserQuizResult($userId, $quizId);
+
+    if ($existingResult) {
+        // Si un résultat existe, mettez à jour le score
+        $query = "UPDATE quiz_results SET score = score + :score, completed_at = NOW() WHERE user_id = :user_id AND quiz_id = :quiz_id";
+    } else {
+        // Sinon, insérez un nouveau résultat
+        $query = "INSERT INTO quiz_results (quiz_id, user_id, score, completed_at) VALUES (:quiz_id, :user_id, :score, NOW())";
+    }
+
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':quiz_id', $quizId);
+    $stmt->bindParam(':user_id', $userId);
+    $stmt->bindParam(':score', $score);
+
+    return $stmt->execute();
+}
+
+    
+    public function getUserQuizResult($quizId, $userId) {
+        $query = "SELECT * FROM quiz_results WHERE quiz_id = :quiz_id AND user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':quiz_id', $quizId);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+    
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function getScoresByUser($userId) {
+        $query = "SELECT q.quiz_name, qr.score FROM quiz_results qr JOIN quizzes q ON qr.quiz_id = q.id WHERE qr.user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getPreviousResults($userId) {
+        $query = "SELECT * FROM quiz_results WHERE user_id = :user_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+    
+        $results = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[$row['quiz_id']] = $row;
+        }
+    
+        return $results;
+    }
+    
 }

@@ -5,8 +5,8 @@ session_start();
 $sessionLifetime = 1800;
 
 // Vérification que l'utilisateur est connecté et est un administrateur
-if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
-    header('Location: ../app/auth/login.php');
+if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 3) {
+    header('Location: ../../app/auth/login.php');
     exit;
 }
 
@@ -14,13 +14,13 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../app/auth/login.php');
+    header('Location: ../../app/auth/login.php');
     exit;
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-require_once '../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\UserController;
@@ -33,12 +33,12 @@ use App\Controllers\AuthController;
 $database = new Database();
 $db = $database->getConnection();
 
-// Vérifiez que l'utilisateur est connecté et qu'il est un administrateur
+// Vérifiez que l'utilisateur est connecté et qu'il est un eleve
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
-if (!$user || $user['role_id'] != 1) {
-    // Rediriger vers la page de connexion si l'utilisateur n'est pas un administrateur
-    header('Location: ../auth/login.php');
+if (!$user || $user['role_id'] != 3) {
+    // Rediriger vers la page de connexion si l'utilisateur n'est pas un eleve
+    header('Location: ../../login.php');
     exit();
 }
 // Déconnexion si le bouton est cliqué
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
 
 // Vérification de l'authentification de l'utilisateur
 if (!isset($_SESSION['user'])) {
-    header('Location: ../auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         if (in_array($filetype, $allowed)) {
                             $imageName = time() . '_' . $image['name'];
-                            if (move_uploaded_file($image['tmp_name'], '../public/uploads/profil_picture/' . $imageName)) {
+                            if (move_uploaded_file($image['tmp_name'], '../../../public/uploads/profil_picture/' . $imageName)) {
                                 $photo_profil = $imageName;
                             } else {
                                 $error = "Erreur lors du téléchargement de l'image.";
@@ -210,12 +210,13 @@ $friends = $friendController->getFriends($userId);
 $userThreads = $threadController->getThreadsByUserId($userId);
 $userResponses = $responseController->getResponsesByUserId($userId);
 
-include '../../public/templates/header.php';
+include_once '../../../public/templates/header.php';
+include_once 'navbar_student.php';
 ?>
 
 <style>
     body {
-        background: url('../../public/image_and_video/gif/anim_background2.gif');
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
         margin: 0;
@@ -404,7 +405,7 @@ include '../../public/templates/header.php';
     }
     /* Ajout de la section "hero" pour donner une touche professionnelle */
     .hero {
-        background: url('../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background: url('../../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
         background-size: cover;
         color: white;
         display: flex;
@@ -452,53 +453,9 @@ include '../../public/templates/header.php';
         border-radius: 12px;
     }
 </style>
-
-
-<nav class="navbar navbar-expand-lg navbar bg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="admin_dashboard.php">Admin Dashboard</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" href="users/manage_users.php">Gérer les Utilisateurs</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les Enseignants</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="students/manage_students.php">Gérer les Étudiants</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les Quiz</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="forum/manage_forum.php">Gérer le Forum</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="my_profile.php">Mon profil</a>
-        </li>
-      </ul>
-      <form method="POST" class="d-inline">
-        <button type="submit" name="logout" class="btn btn-outline-danger">Déconnexion</button>
-      </form>
-    </div>
-  </div>
-</nav>
-
-
-
 <div class="container mt-5">
     <div class="profile-header">
-        <img src="../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
+        <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
         <h1><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h1>
         <p class="bio"><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></p>
         <button class="btn btn-primary btn-modifier-profile" type="button" data-toggle="modal" data-target="#editProfileModal">Modifier le profil</button>
@@ -776,4 +733,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include '../../public/templates/footer.php'; ?>
+<?php include '../../../public/templates/footer.php'; ?>

@@ -30,13 +30,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
 
         switch ($roleId) {
           case 1:
-            $rolePage = '../views/admin/admin_dasboard.php';
+            $rolePage = '../views/admin/admin_dashboard.php';
             break;
           case 2:
-            $rolePage = '../views/admin/teacher_dasboard.php';
+            $rolePage = '../views/teacher/teacher_dashboard.php';
             break;
           case 3:
-            $rolePage = '../views/admin/student_dasboard.php';
+            $rolePage = '../views/student/student_dashboard.php';
             break;
           default:
             $rolePage = 'index.html';
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
                 </li>
             <?php elseif ($roleId == 3): ?>
                 <li class="nav-item">
-                    <a class="nav-link" href="../parent/index.php">Mon espace apprenant</a>
+                    <a class="nav-link" href="../views/student/student_dashboard.php">Mon espace apprenant</a>
                 </li>
             <?php endif; ?>
         <?php else: ?>

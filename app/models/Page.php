@@ -38,7 +38,12 @@ class Page
     {
         $this->video_url = $video_url;
     }
-
+    public function getAllPages()
+    {
+        $query = "SELECT * FROM " . $this->table_name ;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+    }
     public function getPagesBySubCategory($subcategory_id)
     {
         $query = "SELECT * FROM " . $this->table_name . " WHERE subcategory_id = :subcategory_id ORDER BY created_at DESC";

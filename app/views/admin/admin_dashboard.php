@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 // Durée de vie de la session en secondes (30 minutes)
@@ -26,16 +27,54 @@ require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\AuthController;
+use App\Controllers\FormationController;
+use App\Controllers\CategoryController;
+use App\Controllers\PageController;
+use App\Controllers\SubCategoryController;
+use App\Controllers\ThreadController;
+use App\Controllers\UserController;
+use App\Controllers\ProfileController;
+use App\Controllers\QuizController;
+use App\Config\MongoDB;
 
 $database = new Database();
 $db = $database->getConnection();
 
+$mongoClient = new MongoDB();
+$formationController = new FormationController($db);
+$categoryController = new CategoryController($db);
+$subCategoryController = new SubCategoryController($db);
+$pageController = new PageController($db);
+$profileController = new ProfileController($db);
+$threadController = new ThreadController($db);
+$userController = new UserController($db);
+$quizController = new QuizController($db);
+
+$users = $userController->getAllUsers();
+$formations = $formationController->getAllFormations();
+$pages = $pageController->getAllPages();
+
+// Vérifiez si $users contient un tableau valide
+if (!is_array($users) || empty($users)) {
+    echo "Aucun utilisateur trouvé.";
+} else {
+    foreach ($users as $user) {
+        $userId = $user['id'];
+        // Votre traitement ici...
+    }
+}
+
+$profil = $profileController->getProfileByUserId($userId);
+$threads = $threadController->getAllThreads();
+$quizzes = $quizController->getAllQuizzes();
+
 // Déconnexion si le bouton est cliqué
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
-    
     $authController = new AuthController($db);
     $authController->logoutAdmin();
 }
+
+header('Content-Type: text/html; charset=utf-8'); 
 
 include_once '../../../public/templates/header.php'; ?>
 
@@ -267,62 +306,87 @@ include_once '../../../public/templates/header.php'; ?>
 </nav>
 
 <div class="container mt-5">
+    <h2 class="text-white">Statistiques de visionnage de la médiatèque</h2>
     <div class="row">
         <div class="col-md-12">
-            <h1>Bienvenue, <?php echo htmlspecialchars($user['username']); ?>!</h1>
-            <p></p>
+            <?php foreach ($formations as $formation): ?>
+                <div class="card mb-3">
+                    <div class="card-header">
+                        Formation: <?php echo htmlspecialchars_decode($formation['name']); ?>
+                    </div>
+                    <div class="card-body">
+                        <?php 
+                        $categories = $categoryController->getCategoriesByFormation($formation['id']);
+                        foreach ($categories as $category): 
+                        ?>
+                            <h5 class="card-title">Catégorie: <?php echo htmlspecialchars_decode($category['title']); ?></h5>
+                            <?php 
+                            $subcategories = $subCategoryController->getSubCategoriesByCategory($category['id']);
+                            foreach ($subcategories as $subcategory): 
+                            ?>
+                                <h6 class="card-subtitle mb-2 text-muted">Sous-Catégorie: <?php echo htmlspecialchars_decode($subcategory['title']); ?></h6>
+                                <?php 
+                                $pages = $pageController->getPagesBySubCategory($subcategory['id']);
+                                foreach ($pages as $page): 
+                                ?>
+                                    <div class="mt-2">
+                                        <h6 class="card-title">Page: <?php echo htmlspecialchars_decode($page['title']); ?></h6>
+                                        <?php
+                                            $base_url = '../../../public/image_and_video/mp4/';
+                                            $video_url = htmlspecialchars_decode($page['video_url']);
+                                            $cleaned_video_url = str_replace('../../../../public/image_and_video/mp4/', $base_url, $video_url);
+                                            ?>
+                                            <iframe src="<?php echo $cleaned_video_url; ?>" width="100%" height="300" frameborder="0" allowfullscreen></iframe>
+                                        <p class="card-text">
+                                            Nombre de visionnages : <?php echo htmlspecialchars_decode($page['view_count']); ?>
+                                        </p>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
-    <div class="row">
-        <!-- Derniers cours consultés -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    Derniers cours consultés
-                </div>
-                <div class="card-body">
-                    <?php if ($lastCourse): ?>
-                        <h5 class="card-title"><?php echo htmlspecialchars($lastCourse['name']); ?></h5>
-                        <p class="card-text">
-                            Thème: <?php echo htmlspecialchars($lastCourse['theme']); ?><br>
-                            Domaine: <?php echo htmlspecialchars($lastCourse['domain']); ?>
-                        </p>
-                        <a href="#" class="btn btn-primary">Voir le cours</a>
-                    <?php else: ?>
-                        <h5 class="card-title">Aucun cours n'a été consulté pour l'instant</h5>
-                        <a href="#" class="btn btn-primary">Voir les cours</a>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
+</div>
 
-        <!-- Quiz -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    Quiz
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Participer aux Quiz</h5>
-                    <p class="card-text">Testez vos connaissances avec nos quiz.</p>
-                    <a href="#" class="btn btn-primary">Accéder aux Quiz</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Forum -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    Forum
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Discussions du forum</h5>
-                    <p class="card-text">Rejoignez les discussions sur le forum.</p>
-                    <a href="../../forum/index.php" class="btn btn-primary">Accéder au Forum</a>
-                </div>
-            </div>
-        </div>
+<div class="container mt-5">
+    <h2 class="text-white">Progression des Étudiants</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Progression</th>
+                    <th>Points Quiz</th>
+                    <th>Cursus Validé</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (is_array($users) && !empty($users)): ?>
+                    <?php foreach ($users as $user): ?>
+                        <?php 
+                            $progression = getProgressionFromMongoDB($user['_id']);
+                            $quizPoints = getQuizPointsFromMongoDB($user['_id']);
+                            $formationValidation = getFormationValidationFromMongoDB($user['_id']);
+                        ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars_decode($user['username']); ?></td>
+                            <td><?php echo htmlspecialchars_decode($user['email']); ?></td>
+                            <td><?php echo htmlspecialchars_decode($progression); ?>%</td>
+                            <td><?php echo htmlspecialchars_decode($quizPoints); ?></td>
+                            <td><?php echo htmlspecialchars_decode($formationValidation ? 'Oui' : 'Non'); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="5">Aucun utilisateur trouvé.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 </div>
 

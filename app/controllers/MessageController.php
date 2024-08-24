@@ -17,19 +17,9 @@ class MessageController
         }
     }
 
-    public function sendMessageToTeacher($teacher_id, $content)
+    public function sendMessageToTeacher($senderId, $receiverId, $body)
     {
-        if (isset($_SESSION['user']) && isset($_SESSION['user']['id'])) {
-            $sender_id = $_SESSION['user']['id'];
-
-            $this->message->setSenderId($sender_id);
-            $this->message->setReceiverId($teacher_id);
-            $this->message->setContent($content);
-
-            return $this->message->save();
-        } else {
-            throw new Exception('Utilisateur non connecté');
-        }
+            return $this->message->save($senderId, $receiverId, $body);
     }
     public function sendMessageToStudent($senderId, $receiverId, $messageBody)
     {

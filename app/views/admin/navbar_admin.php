@@ -20,7 +20,7 @@ if (!$user || $user['role_id'] != 1) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     
     $authController = new AuthController($db);
-    $authController->logoutAdminInFolder();
+    $authController->logoutInFolder();
 }
 ?>
 

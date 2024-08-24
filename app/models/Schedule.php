@@ -30,7 +30,7 @@ class Schedule
 
     public function save()
     {
-        $query = "INSERT INTO " . $this->table_name . " (teacher_id, schedule, created_at) VALUES (:teacher_id, :schedule, NOW())";
+        $query = "INSERT INTO " . $this->table_name . " (teacher_id, schedule, assigned_at) VALUES (:teacher_id, :schedule, NOW())";
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':teacher_id', $this->teacher_id, PDO::PARAM_INT);
@@ -41,7 +41,7 @@ class Schedule
 
     public function getScheduleByTeacherId($teacher_id)
     {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE teacher_id = :teacher_id ORDER BY created_at DESC";
+        $query = "SELECT * FROM " . $this->table_name . " WHERE teacher_id = :teacher_id ORDER BY assigned_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':teacher_id', $teacher_id, PDO::PARAM_INT);
         $stmt->execute();

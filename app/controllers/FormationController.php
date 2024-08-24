@@ -49,4 +49,8 @@ class FormationController
     {
         return $this->formationModel->assignFormationToStudent($userId, $formationId);
     }
+    public function getStudentProgress($userId, $formationId) {
+        return $this->formationModel->getStudentProgress($userId, $formationId);
+    }
+    
 }

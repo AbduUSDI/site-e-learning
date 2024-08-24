@@ -30,10 +30,10 @@ class AuthController
                         header('Location: ../views/admin/admin_dashboard.php');
                         break;
                     case 2:
-                        header('Location: ../../public/teacher_dashboard.php');
+                        header('Location: ../views/teacher/teacher_dashboard.php');
                         break;
                     case 3:
-                        header('Location: ../../public/student_dashboard.php');
+                        header('Location: ../views/student/student_dashboard.php');
                         break;
                     default:
                         header('Location: login.php');
@@ -128,7 +128,7 @@ class AuthController
         header("Location: ../../../app/auth/login.php");
         exit();
     }
-    public function logoutAdminInFolder()
+    public function logoutInFolder()
     {
         // Démarre la session si ce n'est pas déjà fait
         if (session_status() == PHP_SESSION_NONE) {

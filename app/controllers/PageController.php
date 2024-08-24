@@ -11,7 +11,9 @@ class PageController {
     public function __construct($db) {
         $this->pageModel = new Page($db);
     }
-
+    public function getAllPages() {
+        return $this->pageModel->getAllPages();
+    }
     public function getPagesBySubCategory($subcategory_id) {
         return $this->pageModel->getPagesBySubCategory($subcategory_id);
     }

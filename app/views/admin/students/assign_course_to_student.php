@@ -9,8 +9,13 @@ $db = $database->getConnection();
 
 $formationController = new FormationController($db);
 
-$userId = $_POST['user_id'];
-$formationId = $_POST['formation_id'];
+$userId = (int)$_POST['user_id'] ?? null;
+$formationId = (int)$_POST['formation_id'] ?? null;
+
+if ($userId === null || $formationId === null) {
+    echo json_encode(['status' => 'error', 'message' => 'Données manquantes : user_id ou formation_id']);
+    exit;
+}
 
 if ($formationController->assignFormationToStudent($userId, $formationId)) {
     echo json_encode(['status' => 'success', 'message' => 'Formation ajoutée avec succès.']);

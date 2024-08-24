@@ -215,8 +215,8 @@ include_once '../navbar_admin.php';
     <div class="row">
         <!-- Liste des Formateurs -->
         <div class="col-md-6">
+            <h2 class="text-white">Liste des Formateurs</h2>
             <div class="card hero">
-                <h2 class="text-white">Liste des Formateurs</h2>
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead class="thead-dark">
@@ -244,8 +244,8 @@ include_once '../navbar_admin.php';
         
         <!-- Contacter un Formateur -->
         <div class="col-md-6">
+            <h2 class="text-white">Contacter un Formateur</h2>
             <div class="form-container hero">
-                <h2 class="text-white">Contacter un Formateur</h2>
                 <form id="contactForm">
                     <div class="form-group">
                         <label for="contactTeacherId">Formateur</label>
@@ -257,7 +257,7 @@ include_once '../navbar_admin.php';
                     </div>
                     <div class="form-group">
                         <label for="contactMessage">Message</label>
-                        <textarea id="contactMessage" class="form-control" name="message" rows="4" required></textarea>
+                        <textarea id="contactMessage" class="form-control" name="body" rows="4" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Envoyer</button>
                 </form>
@@ -268,8 +268,8 @@ include_once '../navbar_admin.php';
     <div class="row mt-5">
         <!-- Emploi du Temps -->
         <div class="col-md-12">
+            <h2 class="text-white">Attribuer un Emploi du Temps</h2>
             <div class="form-container hero">
-                <h2 class="text-white">Attribuer un Emploi du Temps</h2>
                 <form id="scheduleForm">
                     <div class="form-group">
                         <label for="scheduleTeacherId">Formateur</label>
@@ -281,7 +281,7 @@ include_once '../navbar_admin.php';
                     </div>
                     <div class="form-group">
                         <label for="schedule">Emploi du Temps</label>
-                        <textarea id="schedule" class="form-control" name="schedule" rows="4" required></textarea>
+                        <textarea id="schedule" class="form-control" name="schedule" rows="10" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Attribuer</button>
                 </form>
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             alert(data.message);
             if (data.status === 'success') {
-                contactForm.reset(); // Vider le formulaire de contact après envoi
+                contactForm.reset();
             }
         })
         .catch(error => console.error('Erreur:', error));
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             alert(data.message);
             if (data.status === 'success') {
-                scheduleForm.reset(); // Vider le formulaire d'emploi du temps après envoi
+                scheduleForm.reset();
             }
         })
         .catch(error => console.error('Erreur:', error));

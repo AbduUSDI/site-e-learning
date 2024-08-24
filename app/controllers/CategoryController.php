@@ -29,14 +29,22 @@ class CategoryController {
     }
 
     public function deleteCategory($id)
-{
-    error_log("Tentative de suppression de la catégorie avec ID: " . $id);
-    $result = $this->categoryModel->deleteCategory($id);
-    if ($result) {
-        error_log("Suppression réussie pour la catégorie avec ID: " . $id);
-    } else {
-        error_log("Échec de la suppression pour la catégorie avec ID: " . $id);
+    {
+        error_log("Tentative de suppression de la catégorie avec ID: " . $id);
+        $result = $this->categoryModel->deleteCategory($id);
+        if ($result) {
+            error_log("Suppression réussie pour la catégorie avec ID: " . $id);
+        } else {
+            error_log("Échec de la suppression pour la catégorie avec ID: " . $id);
+        }
+        return $result;
     }
-    return $result;
-}
+    public function getCategoryProgress($userId, $categoryId) 
+    {
+        return $this->categoryModel->getCategoryProgress($userId, $categoryId);
+    }
+    public function updateCategoryProgress($userId, $categoryId, $status) 
+    {
+        return $this->categoryModel->updateCategoryProgress($userId, $categoryId, $status);
+    }
 }
