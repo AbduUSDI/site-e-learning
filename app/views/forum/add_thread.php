@@ -8,7 +8,7 @@ $sessionLifetime = 1800;
 $allowedRoles = [1, 2, 3];
 
 if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowedRoles)) {
-    header('Location: ../../login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -16,13 +16,13 @@ if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowe
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../../auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-require_once '../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\UserController;
@@ -51,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-include_once '../../public/templates/header.php';
+include_once '../../../public/templates/header.php';
 include_once 'templates/navbar_forum.php';
 ?>
 
 <style>
     body {
-        background: url('../../public/image_and_video/gif/anim_background2.gif');
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
         margin: 0;
@@ -149,7 +149,7 @@ include_once 'templates/navbar_forum.php';
         margin-bottom: 20px;
     }
     .dropdown-menu {
-        background-image: url(../../public/image_and_video/gif/anim_background.gif);
+        background-image: url(../../../public/image_and_video/gif/anim_background.gif);
     }
 </style>
 
@@ -179,4 +179,4 @@ include_once 'templates/navbar_forum.php';
     </div>
 </div>
 
-<?php include_once '../../public/templates/footer.php'; ?>
+<?php include_once '../../../public/templates/footer.php'; ?>

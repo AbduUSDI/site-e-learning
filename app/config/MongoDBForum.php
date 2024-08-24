@@ -1,7 +1,7 @@
 <?php
 namespace App\Config;
 
-require '../../vendor/autoload.php';
+require '../../../vendor/autoload.php';
 
 use MongoDB\Client;
 use Exception;

@@ -6,7 +6,7 @@ $sessionLifetime = 1800;
 
 // Vérification que l'utilisateur est connecté et est un administrateur
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 3) {
-    header('Location: ../../app/auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -14,7 +14,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 3) {
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../app/auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -36,11 +36,6 @@ $db = $database->getConnection();
 // Vérifiez que l'utilisateur est connecté et qu'il est un eleve
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
-if (!$user || $user['role_id'] != 3) {
-    // Rediriger vers la page de connexion si l'utilisateur n'est pas un eleve
-    header('Location: ../../login.php');
-    exit();
-}
 // Déconnexion si le bouton est cliqué
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     
@@ -211,7 +206,6 @@ $userThreads = $threadController->getThreadsByUserId($userId);
 $userResponses = $responseController->getResponsesByUserId($userId);
 
 include_once '../../../public/templates/header.php';
-include_once 'navbar_student.php';
 ?>
 
 <style>
@@ -425,9 +419,9 @@ include_once 'navbar_student.php';
         font-size: 1.25rem;
     }
     .navbar-toggler {
-    background-color: #fff; /* Changer la couleur de fond du bouton */
-    border: none; /* Supprimer les bordures */
-    outline: none; /* Supprimer l'outline */
+        background-color: #fff; /* Changer la couleur de fond du bouton */
+        border: none; /* Supprimer les bordures */
+        outline: none; /* Supprimer l'outline */
     }
 
     .navbar-toggler-icon {
@@ -452,7 +446,104 @@ include_once 'navbar_student.php';
         opacity: 75%;
         border-radius: 12px;
     }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .left-sidebar, .right-sidebar, .main-content {
+            margin-bottom: 15px;
+        }
+
+        .profile-header img {
+            width: 100px;
+            height: 100px;
+        }
+
+        .profile-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero p {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+        }
+
+        .hero p {
+            font-size: 0.875rem;
+        }
+
+        .profile-header img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .profile-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .profile-header p {
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            font-size: 12px;
+            padding: 8px 15px;
+        }
+    }
 </style>
+<nav class="navbar navbar-expand-lg navbar bg">
+    <a class="navbar-brand" href="../student_dashboard.php">Espace Étudiant</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="mediateque/view_courses.php">La médiatèque</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="quiz/views_quizzes.php">Les Quiz</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="exam/view_exams.php">Evaluations</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="messages.php">Messagerie</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="my_profile.php">Mon profil</a>
+            </li>
+            <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+            Forum
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item text-dark" href="../forum/add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/threads.php">Les discussions</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-dark" href="../forum/my_threads.php">Mes publications</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/index.php">Page d'accueil</a></li>
+          </ul>
+        </li>
+      <form method="POST" class="d-inline">
+        <button type="submit" name="logout" class="btn btn-outline-danger">Déconnexion</button>
+      </form>
+    </ul>
+    </div>
+  </div>
+</nav>
 <div class="container mt-5">
     <div class="profile-header">
         <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
@@ -462,7 +553,7 @@ include_once 'navbar_student.php';
     </div>
 
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-4">
             <div class="left-sidebar">
                 <div class="sidebar-item">
                     <h3>Informations personnelles</h3>
@@ -493,7 +584,7 @@ include_once 'navbar_student.php';
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-8">
             <div class="main-content">
                 <div class="content-item">
                     <h3>Mes posts</h3>
@@ -568,7 +659,7 @@ include_once 'navbar_student.php';
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-4">
             <div class="right-sidebar">
                 <div class="sidebar-item">
                     <h3>Demandes d'amis en attente</h3>

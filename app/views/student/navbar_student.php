@@ -33,19 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="../mediateque/view_courses.php">Mes Cours</a>
+                <a class="nav-link" href="../mediateque/view_courses.php">La médiatèque</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../quiz/views_quizzes.php">Mes Quiz</a>
+                <a class="nav-link" href="../quiz/views_quizzes.php">Les Quiz</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../exam/view_exams.php">Mes Examens</a>
+                <a class="nav-link" href="../exam/view_exams.php">Evaluations</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../messages.php">Mes Messages</a>
+                <a class="nav-link" href="../messages.php">Messagerie</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="../my_profile.php">Mon Profil</a>
+                <a class="nav-link" href="../my_profile.php">Mon profil</a>
             </li>
             <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -59,13 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
             <li><a class="dropdown-item text-dark" href="../../forum/index.php">Page d'accueil</a></li>
           </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="../rules/manage_rules.php">Gérer les Règles</a>
-        </li>
-      </ul>
       <form method="POST" class="d-inline">
         <button type="submit" name="logout" class="btn btn-outline-danger">Déconnexion</button>
       </form>
+    </ul>
     </div>
   </div>
 </nav>

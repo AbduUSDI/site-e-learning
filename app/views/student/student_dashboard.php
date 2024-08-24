@@ -37,7 +37,7 @@ $formations = $formationController->getFormationsByUser($_SESSION['user']['id'])
 include_once '../../../public/templates/header.php';
 ?>
 <style>
-  body {
+    body {
         background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
@@ -83,6 +83,8 @@ include_once '../../../public/templates/header.php';
     .card-header {
         padding: 15px;
         font-size: 1.5rem;
+        background-color: #343a40;
+        color: #ffffff;
     }
 
     .card-body {
@@ -133,6 +135,20 @@ include_once '../../../public/templates/header.php';
         width: 25px;
         height: 25px;
     }
+
+    @media (max-width: 768px) {
+        .row {
+            flex-direction: column;
+        }
+
+        .col-md-6 {
+            width: 100%;
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+        }
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar bg">
@@ -165,10 +181,11 @@ include_once '../../../public/templates/header.php';
                     <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
                 </ul>
             </li>
-        </ul>
+        
         <form method="POST" class="form-inline my-2 my-lg-0">
             <button type="submit" name="logout" class="btn btn-outline-danger">Déconnexion</button>
         </form>
+    </ul>
     </div>
 </nav>
 
@@ -177,8 +194,8 @@ include_once '../../../public/templates/header.php';
     <div class="row">
         <div class="col-md-6">
             <div class="card mb-4 shadow-sm">
-                <div class="card-header text-center bg-primary text-white">
-                    <h3>Mes formations</h3>
+                <div class="card-header text-center">
+                    <h3>Mes Formations</h3>
                 </div>
                 <div class="card-body">
                     <ul class="list-group">
@@ -205,38 +222,34 @@ include_once '../../../public/templates/header.php';
                 </div>
             </div>
         </div>
-        <div class="container col-md-6">
+        <div class="col-md-6">
             <div class="card mb-4 shadow-sm">
-                <div class="card-header text-center bg-primary">
-                    <h1 class="text-center mb-4">Mes Quiz</h1>
+                <div class="card-header text-center">
+                    <h3>Mes Quiz</h3>
+                </div>
+                <div class="card-body">
                     <?php if (empty($quizzes)): ?>
                         <p class="text-center">Aucun quiz disponible.</p>
                     <?php else: ?>
-                        <div class="row">
+                        <ul class="list-group">
                             <?php foreach ($quizzes as $quiz): ?>
-                                <div class="col-md-6">
-                                    <div class="card mb-4">
-                                        <div class="card-header text-center">
-                                            <?php echo htmlspecialchars($quiz['quiz_name']); ?>
-                                        </div>
-                                        <div class="card-body">
-                                            <p><?php echo htmlspecialchars($quiz['description']); ?></p>
-                                            <?php if (isset($previousResults[$quiz['id']])): ?>
-                                                <p class="text-success">Score précédent : <?php echo $previousResults[$quiz['id']]['score']; ?>%</p>
-                                                <a href="quiz/take_quiz.php?quiz_id=<?php echo $quiz['id']; ?>&resume=true" class="btn btn-warning">Reprendre le quiz</a>
-                                            <?php else: ?>
-                                                <a href="quiz/take_quiz.php?quiz_id=<?php echo $quiz['id']; ?>" class="btn btn-primary">Commencer le quiz</a>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
+                                <li class="list-group-item">
+                                    <h5><?php echo htmlspecialchars($quiz['quiz_name']); ?></h5>
+                                    <p><?php echo htmlspecialchars($quiz['description']); ?></p>
+                                    <?php if (isset($previousResults[$quiz['id']])): ?>
+                                        <p class="text-success">Score précédent : <?php echo $previousResults[$quiz['id']]['score']; ?>%</p>
+                                        <a href="quiz/take_quiz.php?quiz_id=<?php echo $quiz['id']; ?>&resume=true" class="btn btn-warning">Reprendre le quiz</a>
+                                    <?php else: ?>
+                                        <a href="quiz/take_quiz.php?quiz_id=<?php echo $quiz['id']; ?>" class="btn btn-primary">Commencer le quiz</a>
+                                    <?php endif; ?>
+                                </li>
                             <?php endforeach; ?>
-                        </div>
+                        </ul>
                     <?php endif; ?>
                 </div>
-                    </div>
-                </div>
-                </div>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php include '../../../public/templates/footer.php'; ?>

@@ -8,7 +8,7 @@ $sessionLifetime = 1800;
 $allowedRoles = [1, 2, 3];
 
 if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowedRoles)) {
-    header('Location: ../../login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -16,13 +16,13 @@ if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowe
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../../auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-require_once '../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\UserController;
@@ -60,13 +60,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-include_once '../../public//templates/header.php';
+include_once '../../../public/templates/header.php';
 include_once 'templates/navbar_forum.php';
 ?>
 
 <style>
     body {
-        background: url('../../public/image_and_video/gif/anim_background2.gif');
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
         margin: 0;
@@ -175,9 +175,8 @@ include_once 'templates/navbar_forum.php';
     }
 
     .hero {
-        background: url('../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background: url('../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
         background-size: cover;
-        color: white;
         text-align: center;
         padding: 40px 20px;
         border-radius: 10px;
@@ -193,7 +192,13 @@ include_once 'templates/navbar_forum.php';
     .hero p {
         font-size: 1.25rem;
     }
-
+    .zero {
+        background: whitesmoke;
+        text-align: center;
+        padding: 40px 20px;
+        border-radius: 10px;
+        margin-bottom: 40px;
+    }
     .navbar-toggler {
         background-color: #fff;
         border: none;
@@ -206,12 +211,15 @@ include_once 'templates/navbar_forum.php';
     }
 
     .dropdown-menu {
-        background-image: url(../../public/image_and_video/gif/anim_background.gif);
+        background-image: url(../../../public/image_and_video/gif/anim_background.gif);
     }
 </style>
 
-<div class="container mt-4">
+<div class="container mt-4 hero">
     <h1 class="my-4"><?php echo htmlspecialchars($currentThread['title']); ?></h1>
+    <div class="card">
+    <div class="card-header"></div>
+    <div class="mt-5 zero card-body">
     <p><?php echo htmlspecialchars($currentThread['body']); ?></p>
     <small class="text-muted">Par <?php echo htmlspecialchars($currentThread['user_id']); ?> le <?php echo $currentThread['created_at']; ?></small>
 
@@ -236,6 +244,7 @@ include_once 'templates/navbar_forum.php';
         </div>
         <button type="submit" class="btn btn-primary">Publier</button>
     </form>
+    </div>
 </div>
-
-<?php include_once '../../public/templates/footer.php'; ?>
+</div>
+<?php include_once '../../../public/templates/footer.php'; ?>

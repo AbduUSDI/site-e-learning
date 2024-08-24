@@ -8,7 +8,7 @@ $sessionLifetime = 1800;
 $allowedRoles = [1, 2, 3];
 
 if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowedRoles)) {
-    header('Location: ../../login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -16,13 +16,13 @@ if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['role_id'], $allowe
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../../auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
 $_SESSION['LAST_ACTIVITY'] = time();
 
-require_once '../../vendor/autoload.php';
+require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
 use App\Controllers\ThreadController;
@@ -86,13 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include '../../public/templates/header.php';
+include '../../../public/templates/header.php';
 include 'templates/navbar_forum.php';
 ?>
 
 <style>
     body {
-        background: url('../../public/image_and_video/gif/anim_background2.gif');
+        background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
         margin: 0;
@@ -205,7 +205,7 @@ include 'templates/navbar_forum.php';
     }
 
     .hero {
-        background: url('../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
+        background: url('../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
         background-size: cover;
         color: white;
         text-align: center;
@@ -236,7 +236,7 @@ include 'templates/navbar_forum.php';
     }
 
     .dropdown-menu {
-        background-image: url(../../public/image_and_video/gif/anim_background.gif);
+        background-image: url(../../../public/image_and_video/gif/anim_background.gif);
     }
     .table {
         background: whitesmoke;
@@ -300,4 +300,4 @@ include 'templates/navbar_forum.php';
     <a href="add_thread.php" class="btn btn-info mt-3">Créer un nouveau thread</a>
 </div>
 
-<?php include '../../public/templates/footer.php'; ?>
+<?php include '../../../public/templates/footer.php'; ?>
