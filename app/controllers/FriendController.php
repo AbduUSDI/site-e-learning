@@ -41,7 +41,9 @@ class FriendController
     {
         return $this->friendRequestModel->getFriends($userId);
     }
-
+    public function removeFriend($userId, $friendId) {
+        return $this->friendRequestModel->removeFriend($userId, $friendId);
+    }
     public function getPendingRequests($userId)
     {
         return $this->friendRequestModel->getPendingRequests($userId);
@@ -53,5 +55,10 @@ class FriendController
     public function getFriendRequests($user_id)
     {
         return $this->friendRequestModel->getFriendRequests($user_id);
+    }
+    // Méthode pour obtenir un utilisateur par ID
+    public function getUserById($userId)
+    {
+        return $this->friendRequestModel->getUserById($userId);
     }
 }

@@ -95,6 +95,14 @@ public function getFormationsByUser($userId)
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC); // Doit retourner un tableau
 }
+public function getFormationByUserId($userId)
+{
+    $query = "SELECT f.name FROM formations f JOIN user_formations uf ON f.id = uf.formation_id WHERE uf.user_id = :userId";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 private function getCategoriesByFormationId($formationId)
 {

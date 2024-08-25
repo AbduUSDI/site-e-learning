@@ -88,4 +88,7 @@ class UserController
     {
         return $this->user->validateCursus($studentId, $validationStatus);
     }
+    public function getCursusValidationStats() {
+        return $this->user->getCursusValidationStats();
+    }
 }

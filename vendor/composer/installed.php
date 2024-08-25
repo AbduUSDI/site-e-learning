@@ -3,7 +3,7 @@
         'name' => 'votre-nom/e-learning',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'f42862a5ab7e0ccc1727286661931c9a6fd836ae',
+        'reference' => 'eaa1e52c87ac64a9ffb6db414397c6a746c5248b',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -400,6 +400,15 @@
             'aliases' => array(),
             'dev_requirement' => true,
         ),
+        'setasign/fpdf' => array(
+            'pretty_version' => '1.8.2',
+            'version' => '1.8.2.0',
+            'reference' => 'd77904018090c17dc9f3ab6e944679a7a47e710a',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../setasign/fpdf',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'slim/slim' => array(
             'pretty_version' => '4.14.0',
             'version' => '4.14.0.0',
@@ -481,7 +490,7 @@
         'votre-nom/e-learning' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'f42862a5ab7e0ccc1727286661931c9a6fd836ae',
+            'reference' => 'eaa1e52c87ac64a9ffb6db414397c6a746c5248b',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

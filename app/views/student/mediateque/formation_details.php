@@ -180,7 +180,7 @@ include_once '../navbar_student.php';
                                                             </button>
                                                         </h2>
                                                     </div>
-                                                    <div id="collapsePage<?php echo $page['id']; ?>" class="collapse" aria-labelledby="headingPage<?php echo $page['id']; ?>" data-parent="#subCategoryAccordion<?php echo $subCategory['id']; ?>">
+                                                    <div id="collapsePage<?php echo $page['id']; ?>" class="collapse" aria-labelledby="headingPage<?php echo $page['id']; ?>" data-parent="#subCategoryAccordion<?php echo $subCategory['id']; ?>" data-id="<?php echo $page['id']; ?>">
                                                         <div class="card-body">
                                                             <p><?php echo htmlspecialchars_decode($page['content']); ?></p>
                                                             <?php if (!empty($page['video_url'])): ?>
@@ -202,29 +202,54 @@ include_once '../navbar_student.php';
     <?php endif; ?>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     function updateCategoryStatus(categoryId, status) {
-    $.ajax({
-        url: 'update_category_status.php',
-        type: 'POST',
-        data: {
-            category_id: categoryId,
-            status: status
-        },
-        success: function(response) {
-            response = JSON.parse(response);
-            if (response.success) {
-                $('#status-' + categoryId).text(response.status);
-                alert('Statut mis à jour avec succès');
-            } else {
-                alert('Erreur lors de la mise à jour du statut');
+        $.ajax({
+            url: 'update_category_status.php',
+            type: 'POST',
+            data: {
+                category_id: categoryId,
+                status: status
+            },
+            success: function(response) {
+                response = JSON.parse(response);
+                if (response.success) {
+                    $('#status-' + categoryId).text(response.status);
+                    alert('Statut mis à jour avec succès');
+                } else {
+                    alert('Erreur lors de la mise à jour du statut');
+                }
+            },
+            error: function() {
+                alert('Erreur lors de la requête AJAX');
             }
-        },
-        error: function() {
-            alert('Erreur lors de la requête AJAX');
+        });
+    }
+
+    $(document).ready(function() {
+    $('.collapse').on('show.bs.collapse', function() {
+        var pageId = $(this).attr('data-id');
+        if (pageId) {
+            $.ajax({
+                url: 'update_view_count.php',
+                type: 'POST',
+                data: { id: pageId }, // Assurez-vous d'envoyer 'id' si c'est le nom de votre colonne
+                success: function(response) {
+                    response = JSON.parse(response);
+                    if (response.success) {
+                        console.log('View count incremented for page ID: ' + pageId);
+                    } else {
+                        console.log('Failed to increment view count for page ID: ' + pageId);
+                    }
+                },
+                error: function() {
+                    console.log('Error during AJAX request');
+                }
+            });
         }
     });
-}
+});
 
 </script>
 

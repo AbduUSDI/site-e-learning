@@ -21,7 +21,11 @@ class PageController {
     public function getPageById($id) {
         return $this->pageModel->getPageById($id);
     }
-
+    // Méthode pour incrémenter le compteur de vues d'une page
+    public function incrementPageViewCount($pageId)
+    {
+        return $this->pageModel->incrementViewCount($pageId);
+    }
     public function createPage($title, $content, $video_url, $subcategory_id) {
         return $this->pageModel->createPage($title, $content, $video_url, $subcategory_id);
     }

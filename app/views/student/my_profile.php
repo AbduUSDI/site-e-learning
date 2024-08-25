@@ -4,7 +4,7 @@ session_start();
 // Durée de vie de la session en secondes (30 minutes)
 $sessionLifetime = 1800;
 
-// Vérification que l'utilisateur est connecté et est un administrateur
+// Vérification que l'utilisateur est connecté et est un étudiant
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 3) {
     header('Location: ../../auth/login.php');
     exit;
@@ -33,27 +33,6 @@ use App\Controllers\AuthController;
 $database = new Database();
 $db = $database->getConnection();
 
-// Vérifiez que l'utilisateur est connecté et qu'il est un eleve
-$user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
-
-// Déconnexion si le bouton est cliqué
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
-    
-    $authController = new AuthController($db);
-    $authController->logoutAdmin();
-}
-
-// Vérification de l'authentification de l'utilisateur
-if (!isset($_SESSION['user'])) {
-    header('Location: ../../auth/login.php');
-    exit;
-}
-
-// Connexion à la base de données
-$database = new Database();
-$db = $database->getConnection();
-
-// Initialisation des contrôleurs
 $userController = new UserController($db);
 $profileController = new ProfileController($db);
 $friendController = new FriendController($db);
@@ -64,146 +43,17 @@ $userId = $_SESSION['user']['id'];
 $currentUser = $userController->getUserById($userId);
 $userProfile = $profileController->getProfileByUserId($userId);
 
-// Gestion des actions du formulaire
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action'])) {
-        $result = false;
-        $message = '';
-        $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
-
-        try {
-            switch ($action) {
-                case 'update_profile':
-                    $prenom = filter_input(INPUT_POST, 'prenom', FILTER_SANITIZE_STRING);
-                    $nom = filter_input(INPUT_POST, 'nom', FILTER_SANITIZE_STRING);
-                    $date_naissance = filter_input(INPUT_POST, 'date_naissance', FILTER_SANITIZE_STRING);
-                    $biographie = filter_input(INPUT_POST, 'biographie', FILTER_SANITIZE_STRING);
-                    $photo_profil = $userProfile['photo_profil'];
-
-                    if (isset($_FILES['photo_profil']) && $_FILES['photo_profil']['error'] == UPLOAD_ERR_OK) {
-                        $image = $_FILES['photo_profil'];
-                        $allowed = ['jpg' => 'image/jpg', 'jpeg' => 'image/jpeg', 'gif' => 'image/gif', 'png' => 'image/png'];
-                        $filetype = $image['type'];
-
-                        if (in_array($filetype, $allowed)) {
-                            $imageName = time() . '_' . $image['name'];
-                            if (move_uploaded_file($image['tmp_name'], '../../../public/uploads/profil_picture/' . $imageName)) {
-                                $photo_profil = $imageName;
-                            } else {
-                                $error = "Erreur lors du téléchargement de l'image.";
-                            }
-                        } else {
-                            $error = "Type de fichier non autorisé.";
-                        }
-                    }
-
-                    if (!isset($error)) {
-                        $result = $profileController->saveProfile($userId, $prenom, $nom, $date_naissance, $biographie, $photo_profil);
-                        $message = $result ? "Profil mis à jour avec succès." : "Erreur lors de la mise à jour du profil.";
-                        if ($result) {
-                            $userProfile = $profileController->getProfileByUserId($userId);
-                        }
-                    } else {
-                        $message = $error;
-                    }
-                    break;
-
-                case 'send_friend_request':
-                    $friend_username = filter_input(INPUT_POST, 'friend_username', FILTER_SANITIZE_STRING);
-                    if ($friend_username) {
-                        $receiver = $userController->getUserByUsername($friend_username);
-                        if ($receiver) {
-                            $result = $friendController->sendFriendRequest($userId, $receiver['id']);
-                            $message = $result ? "Demande d'ami envoyée avec succès." : "Erreur lors de l'envoi de la demande d'ami.";
-                        } else {
-                            $message = "Utilisateur non trouvé.";
-                        }
-                    } else {
-                        $message = "Nom d'utilisateur requis pour envoyer une demande d'ami.";
-                    }
-                    break;
-
-                case 'update_thread':
-                    $threadId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-                    $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
-                    $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_STRING);
-
-                    if ($threadId && $title && $body) {
-                        $result = $threadController->updatePost($threadId, $title, $body);
-                        $message = $result ? "Post mis à jour avec succès." : "Erreur lors de la mise à jour du post.";
-                    } else {
-                        $message = "Tous les champs sont requis pour mettre à jour un post.";
-                    }
-                    break;
-
-                case 'delete_thread':
-                    $threadId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-                    if ($threadId) {
-                        $result = $threadController->deletePost($threadId);
-                        $message = $result ? "Post supprimé avec succès." : "Erreur lors de la suppression du post.";
-                    } else {
-                        $message = "ID de post invalide pour la suppression.";
-                    }
-                    break;
-
-                case 'update_response':
-                    $responseId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
-                    $body = filter_input(INPUT_POST, 'body', FILTER_SANITIZE_STRING);
-
-                    if ($responseId && $body) {
-                        $result = $responseController->updateResponse($responseId, $body);
-                        $message = $result ? "Réponse mise à jour avec succès." : "Erreur lors de la mise à jour de la réponse.";
-                    } else {
-                        $message = "Tous les champs sont requis pour mettre à jour une réponse.";
-                    }
-                    break;
-
-                case 'delete_response':
-                    $responseId = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-                    if ($responseId) {
-                        $result = $responseController->deleteResponse($responseId);
-                        $message = $result ? "Réponse supprimée avec succès." : "Erreur lors de la suppression de la réponse.";
-                    } else {
-                        $message = "ID de réponse invalide pour la suppression.";
-                    }
-                    break;
-
-                    case 'update_user_profile':
-                        $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
-                        $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-                        $newPassword = filter_input(INPUT_POST, 'new_password', FILTER_SANITIZE_STRING);
-                        
-                        if ($username && $email) {
-                            $result = $userController->updateUserProfile($userId, $username, $email, $newPassword);
-                            if ($result) {
-                                $_SESSION['user']['username'] = $username;
-                                $_SESSION['user']['email'] = $email;
-                            }
-                            $message = $result ? "Profile updated successfully." : "Error updating profile.";
-                        } else {
-                            $message = "Username and email are required.";
-                        }
-                        break;
-                    
-                    
-                // Ajout de cases pour gérer les actions supplémentaires...
-            }
-        } catch (Exception $e) {
-            $message = "Une erreur est survenue : " . $e->getMessage();
-        }
-
-        $_SESSION['message'] = $message;
-        $_SESSION['message_type'] = $result ? 'success' : 'danger';
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
-    }
-}
-
-// Récupération des données nécessaires pour l'affichage
 $friendRequests = $friendController->getFriendRequests($userId);
 $friends = $friendController->getFriends($userId);
 $userThreads = $threadController->getThreadsByUserId($userId);
 $userResponses = $responseController->getResponsesByUserId($userId);
+
+// Déconnexion si le bouton est cliqué
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    
+    $authController = new AuthController($db);
+    $authController->logoutAdmin();
+}
 
 include_once '../../../public/templates/header.php';
 ?>
@@ -213,54 +63,114 @@ include_once '../../../public/templates/header.php';
         background: url('../../../public/image_and_video/gif/anim_background2.gif');
         font-family: Arial, sans-serif;
         color: #333;
-        margin: 0;
-        padding: 0;
     }
     .profile-header {
         text-align: center;
         margin-bottom: 30px;
+        background-color: black;
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
     }
-
     .profile-header img {
         border-radius: 50%;
         width: 150px;
         height: 150px;
         object-fit: cover;
+        border: 5px solid white;
     }
-
     .profile-header h1 {
-        font-size: 2rem;
-        margin-top: 10px;
+        font-size: 2.5rem;
+        margin-top: 15px;
     }
-
     .profile-header p {
-        color: #555;
+        font-size: 1.2rem;
     }
-
-    .left-sidebar, .right-sidebar, .main-content {
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 20px;
-        margin-bottom: 20px;
     }
-
-    .sidebar-item h3, .content-item h3 {
+    .card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+    .card h3 {
+        margin-bottom: 20px;
         font-size: 1.5rem;
+    }
+    .card p {
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+    .sidebar-item h3 {
+        font-size: 1.25rem;
         margin-bottom: 15px;
     }
-
     .list-group-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
         padding: 10px 15px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        margin-bottom: 10px;
         background-color: #f8f9fa;
+        margin-bottom: 10px;
     }
-
+    .btn {
+        font-size: 14px;
+        padding: 10px 20px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+    .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    .btn-outline-danger:hover {
+        color: #fff;
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+    .modal-content {
+        border-radius: 8px;
+    }
+    .form-control {
+        border-radius: 4px;
+    }
+    .form-group label {
+        font-weight: 600;
+    }
+    .profile-section {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .profile-section .left-sidebar,
+    .profile-section .right-sidebar {
+        flex: 1;
+        margin: 0 10px;
+    }
+    .profile-section .main-content {
+        flex: 2;
+        margin: 0 10px;
+    }
     .navbar {
         background-color: #343a40;
         padding: 10px 0;
@@ -277,234 +187,19 @@ include_once '../../../public/templates/header.php';
         text-decoration: underline;
     }
 
-    .container {
-        margin-top: 50px;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 40px;
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: white;
-    }
-
-    .table-responsive {
-        margin-bottom: 50px;
-    }
-
-    .table {
-        background-color: #ffffff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .table th {
-        background-color: #343a40;
-        color: #ffffff;
-        padding: 15px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .table td {
-        padding: 15px;
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    .btn {
-        font-size: 14px;
-        padding: 10px 20px;
-        border-radius: 4px;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-        border-color: #0056b3;
-    }
-
-    .btn-success {
-        background-color: #28a745;
-        border-color: #28a745;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        border-color: #218838;
-    }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-    }
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #5a6268;
-    }
-
-    .btn-warning {
-        background-color: #ffc107;
-        border-color: #ffc107;
-    }
-
-    .btn-warning:hover {
-        background-color: #e0a800;
-        border-color: #d39e00;
-    }
-
-    .modal-content {
-        border-radius: 8px;
-    }
-
-    .form-control {
-        border-radius: 4px;
-    }
-
-    .form-group label {
-        font-weight: 600;
-    }
-
-    footer {
-        background-color: #343a40;
-        color: white;
-        padding: 20px 0;
-        text-align: center;
-        margin-top: 50px;
-    }
-
-    footer a {
-        color: #adb5bd;
-        text-decoration: none;
-    }
-
-    footer a:hover {
-        text-decoration: underline;
-    }
-    .modal-header, .modal-footer {
-        background-color: #f0f2f5;
-    }
-
-    .modal-title {
-        font-weight: bold;
-        color: #333;
-    }
-    /* Ajout de la section "hero" pour donner une touche professionnelle */
-    .hero {
-        background: url('../../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
-        background-size: cover;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        border-radius: 10px;
-    }
-
-    .hero h1 {
-        font-size: 3.5rem;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-
-    .hero p {
-        font-size: 1.25rem;
-    }
-    .navbar-toggler {
-        background-color: #fff; /* Changer la couleur de fond du bouton */
-        border: none; /* Supprimer les bordures */
-        outline: none; /* Supprimer l'outline */
-    }
-
-    .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        /* Remplacer la couleur de l'icône par une couleur plus foncée */
-        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
-    }
-
-    .navbar-toggler:focus {
-        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
-    }
-    .navbar-toggler-icon {
-        width: 25px;
-        height: 25px;
-    }
-    .bio {
-        background-color: white;
-        color: white;
-        padding: 20px 0;
-        text-align: center;
-        margin-top: 50px;
-        opacity: 75%;
-        border-radius: 12px;
-    }
-
-    /* Responsive design */
     @media (max-width: 768px) {
-        .left-sidebar, .right-sidebar, .main-content {
-            margin-bottom: 15px;
+        .profile-section {
+            flex-direction: column;
         }
-
-        .profile-header img {
-            width: 100px;
-            height: 100px;
-        }
-
-        .profile-header h1 {
-            font-size: 1.75rem;
-        }
-
-        .hero h1 {
-            font-size: 2.5rem;
-        }
-
-        .hero p {
-            font-size: 1rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .profile-header h1 {
-            font-size: 1.5rem;
-        }
-
-        .hero h1 {
-            font-size: 2rem;
-        }
-
-        .hero p {
-            font-size: 0.875rem;
-        }
-
-        .profile-header img {
-            width: 80px;
-            height: 80px;
-        }
-
-        .profile-header h1 {
-            font-size: 1.25rem;
-        }
-
-        .profile-header p {
-            font-size: 0.875rem;
-        }
-
-        .btn {
-            font-size: 12px;
-            padding: 8px 15px;
+        .profile-section .left-sidebar,
+        .profile-section .right-sidebar,
+        .profile-section .main-content {
+            margin: 0;
         }
     }
 </style>
 <nav class="navbar navbar-expand-lg navbar bg">
-    <a class="navbar-brand" href="../student_dashboard.php">Espace Étudiant</a>
+    <a class="navbar-brand" href="student_dashboard.php">Espace Étudiant</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -525,6 +220,9 @@ include_once '../../../public/templates/header.php';
             <li class="nav-item">
                 <a class="nav-link" href="my_profile.php">Mon profil</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="lives/view_lives.php">Les lives</a>
+            </li>
             <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
             Forum
@@ -544,156 +242,183 @@ include_once '../../../public/templates/header.php';
     </div>
   </div>
 </nav>
-<div class="container mt-5">
-    <div class="profile-header">
-        <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
-        <h1><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h1>
-        <p class="bio"><?php echo htmlspecialchars($userProfile['biographie'] ?? ''); ?></p>
-        <button class="btn btn-primary btn-modifier-profile" type="button" data-toggle="modal" data-target="#editProfileModal">Modifier le profil</button>
-    </div>
+<div class="profile-header">
+    <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
+    <h1><?php echo htmlspecialchars($userProfile['prenom'] . ' ' . $userProfile['nom']); ?></h1>
+    <p><?php echo htmlspecialchars($userProfile['biographie'] ?? 'À propos de moi'); ?></p>
+    <button class="btn btn-outline-light btn-modifier-profile" type="button" data-toggle="modal" data-target="#editProfileModal">Modifier le profil</button>
+</div>
 
-    <div class="row">
-        <div class="col-lg-3 col-md-4">
-            <div class="left-sidebar">
-                <div class="sidebar-item">
-                    <h3>Informations personnelles</h3>
-                    <p><strong>Nom d'utilisateur:</strong> <?php echo htmlspecialchars($currentUser['username']); ?></p>
-                    <p><strong>Email:</strong> <?php echo htmlspecialchars($currentUser['email']); ?></p>
-                    <p><strong>Date de naissance:</strong> <?php echo htmlspecialchars($userProfile['date_naissance']); ?></p>
-                    <button class="btn btn-primary btn-modifier-userprofile" type="button" data-toggle="modal" data-target="#editUserProfileModal" style="width: auto;">Modifier les informations profil</button>
-                </div>
-                <div class="sidebar-item">
-                    <h3>Mes amis</h3>
-                    <ul class="list-group">
-                        <?php if (empty($friends)): ?>
-                            <li class="list-group-item">Vous n'avez pas encore d'amis.</li>
-                        <?php else: ?>
-                            <?php foreach ($friends as $friend): ?>
-                                <li class="list-group-item">
+<div class="container">
+    <div class="profile-section">
+        <div class="left-sidebar">
+            <div class="card">
+                <h3>Informations personnelles</h3>
+                <p><strong>Nom d'utilisateur:</strong> <?php echo htmlspecialchars($currentUser['username']); ?></p>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($currentUser['email']); ?></p>
+                <p><strong>Date de naissance:</strong> <?php echo htmlspecialchars($userProfile['date_naissance']); ?></p>
+                <button class="btn btn-primary btn-modifier-userprofile" type="button" data-toggle="modal" data-target="#editUserProfileModal" style="width: auto;">Modifier les informations profil</button>
+            </div>
+
+            <div class="card">
+                <h3>Mes amis</h3>
+                <ul class="list-group">
+                    <?php if (empty($friends)): ?>
+                        <li class="list-group-item">Vous n'avez pas encore d'amis.</li>
+                    <?php else: ?>
+                        <?php foreach ($friends as $friend): ?>
+                            <li class="list-group-item">
+                                <a href="#" class="friend-profile-link" data-toggle="modal" data-target="#friendProfileModal" data-user-id="<?php echo $friend['friend_id']; ?>">
                                     <?php echo htmlspecialchars($friend['username']); ?>
-                                    <form action="my_profile.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ami ?');">
-                                        <input type="hidden" name="action" value="remove_friend">
-                                        <input type="hidden" name="request_id" value="<?php echo $friend['request_id']; ?>">
+                                </a>
+                                <form action="my_profile.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ami ?');">
+                                    <input type="hidden" name="action" value="remove_friend">
+                                    <input type="hidden" name="friend_id" value="<?php echo $friend['friend_id']; ?>">
+                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                </form>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Mon Certificat</h3>
+                <?php if ($currentUser['certificate_issued']): ?>
+                    <p><a href="../../../public/uploads/certificates/certificat_<?php echo $userId; ?>.pdf" target="_blank" class="btn btn-success">Télécharger le certificat</a></p>
+                <?php else: ?>
+                    <p>Votre certificat sera disponible ici une fois que votre cursus sera validé.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="card">
+                <h3>Mes posts</h3>
+                <?php if (empty($userThreads)): ?>
+                    <p>Vous n'avez pas encore créé de post.</p>
+                <?php else: ?>
+                    <ul class="list-group">
+                        <?php foreach ($userThreads as $thread): ?>
+                            <li class="list-group-item">
+                                <strong><?php echo htmlspecialchars($thread['title']); ?></strong>
+                                <div>
+                                    <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editThreadForm<?php echo $thread['id']; ?>">Modifier</button>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce post ?');">
+                                        <input type="hidden" name="action" value="delete_thread">
+                                        <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
                                         <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
                                     </form>
-                                </li>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                                </div>
+                                <div class="collapse" id="editThreadForm<?php echo $thread['id']; ?>">
+                                    <form action="my_profile.php" method="POST">
+                                        <input type="hidden" name="action" value="update_thread">
+                                        <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
+                                        <div class="form-group">
+                                            <label for="title<?php echo $thread['id']; ?>">Titre</label>
+                                            <input type="text" class="form-control" id="title<?php echo $thread['id']; ?>" name="title" value="<?php echo htmlspecialchars($thread['title']); ?>" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="body<?php echo $thread['id']; ?>">Contenu</label>
+                                            <textarea class="form-control" id="body<?php echo $thread['id']; ?>" name="body" required><?php echo htmlspecialchars($thread['body']); ?></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success mt-2">Enregistrer les modifications</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
                     </ul>
-                </div>
+                <?php endif; ?>
+            </div>
+
+            <div class="card">
+                <h3>Mes réponses</h3>
+                <?php if (empty($userResponses)): ?>
+                    <p>Vous n'avez pas encore répondu à un post.</p>
+                <?php else: ?>
+                    <ul class="list-group">
+                        <?php foreach ($userResponses as $response): ?>
+                            <li class="list-group-item">
+                                <p><?php echo htmlspecialchars(substr($response['body'], 0, 50)) . '...'; ?></p>
+                                <div>
+                                    <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editResponseForm<?php echo $response['id']; ?>">Modifier</button>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
+                                        <input type="hidden" name="action" value="delete_response">
+                                        <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                    </form>
+                                </div>
+                                <div class="collapse" id="editResponseForm<?php echo $response['id']; ?>">
+                                    <form action="my_profile.php" method="POST">
+                                        <input type="hidden" name="action" value="update_response">
+                                        <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
+                                        <div class="form-group">
+                                            <label for="body<?php echo $response['id']; ?>">Contenu</label>
+                                            <textarea class="form-control" id="body<?php echo $response['id']; ?>" name="body" required><?php echo htmlspecialchars($response['body']); ?></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success mt-2">Enregistrer les modifications</button>
+                                    </form>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
         </div>
 
-        <div class="col-lg-6 col-md-8">
-            <div class="main-content">
-                <div class="content-item">
-                    <h3>Mes posts</h3>
-                    <?php if (empty($userThreads)): ?>
-                        <p>Vous n'avez pas encore créé de post.</p>
-                    <?php else: ?>
-                        <ul class="list-group">
-                            <?php foreach ($userThreads as $thread): ?>
-                                <li class="list-group-item">
-                                    <strong><?php echo htmlspecialchars($thread['title']); ?></strong>
-                                    <div>
-                                        <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editThreadForm<?php echo $thread['id']; ?>">Modifier</button>
-                                        <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce post ?');">
-                                            <input type="hidden" name="action" value="delete_thread">
-                                            <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                        </form>
-                                    </div>
-                                    <div class="collapse" id="editThreadForm<?php echo $thread['id']; ?>">
-                                        <form action="my_profile.php" method="POST">
-                                            <input type="hidden" name="action" value="update_thread">
-                                            <input type="hidden" name="id" value="<?php echo $thread['id']; ?>">
-                                            <div class="form-group">
-                                                <label for="title<?php echo $thread['id']; ?>">Titre</label>
-                                                <input type="text" class="form-control" id="title<?php echo $thread['id']; ?>" name="title" value="<?php echo htmlspecialchars($thread['title']); ?>" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="body<?php echo $thread['id']; ?>">Contenu</label>
-                                                <textarea class="form-control" id="body<?php echo $thread['id']; ?>" name="body" required><?php echo htmlspecialchars($thread['body']); ?></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-success mt-2">Enregistrer les modifications</button>
-                                        </form>
-                                    </div>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                </div>
-                <div class="content-item">
-                    <h3>Mes réponses</h3>
-                    <?php if (empty($userResponses)): ?>
-                        <p>Vous n'avez pas encore répondu à un post.</p>
-                    <?php else: ?>
-                        <ul class="list-group">
-                            <?php foreach ($userResponses as $response): ?>
-                                <li class="list-group-item">
-                                    <p><?php echo htmlspecialchars(substr($response['body'], 0, 50)) . '...'; ?></p>
-                                    <div>
-                                        <button class="btn btn-sm btn-warning" data-toggle="collapse" data-target="#editResponseForm<?php echo $response['id']; ?>">Modifier</button>
-                                        <form method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
-                                            <input type="hidden" name="action" value="delete_response">
-                                            <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                                        </form>
-                                    </div>
-                                    <div class="collapse" id="editResponseForm<?php echo $response['id']; ?>">
-                                        <form action="my_profile.php" method="POST">
-                                            <input type="hidden" name="action" value="update_response">
-                                            <input type="hidden" name="id" value="<?php echo $response['id']; ?>">
-                                            <div class="form-group">
-                                                <label for="body<?php echo $response['id']; ?>">Contenu</label>
-                                                <textarea class="form-control" id="body<?php echo $response['id']; ?>" name="body" required><?php echo htmlspecialchars($response['body']); ?></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-success mt-2">Enregistrer les modifications</button>
-                                        </form>
-                                    </div>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                </div>
+        <div class="right-sidebar">
+            <div class="card">
+                <h3>Demandes d'amis en attente</h3>
+                <?php if (empty($friendRequests)): ?>
+                    <p>Vous n'avez pas de demandes d'amis en attente.</p>
+                <?php else: ?>
+                    <ul class="list-group">
+                        <?php foreach ($friendRequests as $request): ?>
+                            <li class="list-group-item">
+                                <span>Demande de <?php echo htmlspecialchars($request['sender_username']); ?></span>
+                                <form action="my_profile.php" method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="respond_friend_request">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <input type="hidden" name="status" value="accepted">
+                                    <button type="submit" class="btn btn-sm btn-success">Accepter</button>
+                                </form>
+                                <form action="my_profile.php" method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="respond_friend_request">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <input type="hidden" name="status" value="declined">
+                                    <button type="submit" class="btn btn-sm btn-danger">Refuser</button>
+                                </form>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="col-lg-3 col-md-4">
-            <div class="right-sidebar">
-                <div class="sidebar-item">
-                    <h3>Demandes d'amis en attente</h3>
-                    <?php if (empty($friendRequests)): ?>
-                        <p>Vous n'avez pas de demandes d'amis en attente.</p>
-                    <?php else: ?>
-                        <ul class="list-group">
-                            <?php foreach ($friendRequests as $request): ?>
-                                <li class="list-group-item">
-                                    <span>Demande de <?php echo htmlspecialchars($request['sender_username']); ?></span>
-                                    <form action="my_profile.php" method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="respond_friend_request">
-                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                        <input type="hidden" name="status" value="accepted">
-                                        <button type="submit" class="btn btn-sm btn-success">Accepter</button>
-                                    </form>
-                                    <form action="my_profile.php" method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="respond_friend_request">
-                                        <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
-                                        <input type="hidden" name="status" value="declined">
-                                        <button type="submit" class="btn btn-sm btn-danger">Refuser</button>
-                                    </form>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
+<!-- Modal Profil de l'ami -->
+<div class="modal fade" id="friendProfileModal" tabindex="-1" role="dialog" aria-labelledby="friendProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="friendProfileModalLabel">Profil de l'ami</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="friend-profile-content">
+                    <!-- Contenu du profil chargé via AJAX -->
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Modals pour modifier le profil -->
-
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -741,23 +466,19 @@ include_once '../../../public/templates/header.php';
             <div class="modal-body">
                 <form action="my_profile.php" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="update_user_profile">
-
                     <div class="mb-3">
                         <label for="username" class="form-label">Nom d'utilisateur</label>
                         <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($currentUser['username']); ?>" required>
                     </div>
-                    
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($currentUser['email']); ?>" required>
                     </div>
-                    
                     <div class="mb-3">
                         <label for="new_password" class="form-label">Nouveau mot de passe (optionnel)</label>
                         <input type="password" class="form-control" id="new_password" name="new_password">
                         <button type="button" class="btn btn-outline-secondary" id="togglePassword"><i class="fas fa-eye"></i></button>
                     </div>
-
                     <button type="submit" class="btn btn-primary">Mettre à jour le profil</button>
                 </form>
             </div>
@@ -803,7 +524,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    var friendProfileLinks = document.querySelectorAll('.friend-profile-link');
+
+    friendProfileLinks.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            var userId = this.getAttribute('data-user-id');
+
+            fetch('ajax/get_user_profile.php?friend_id=' + userId)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('friend-profile-content').innerHTML = data;
+                })
+                .catch(error => console.error('Erreur:', error));
+        });
+    });
 });
+
 document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('new_password');

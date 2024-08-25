@@ -2,58 +2,65 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+use App\Config\Database;
+use App\Controllers\AuthController;
 
+$database = new Database();
+$db = $database->getConnection();
+
+// Vérifiez que l'utilisateur est connecté et qu'il est un formateur
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
+
+if (!$user || $user['role_id'] != 2) {
+    // Rediriger vers la page de connexion si l'utilisateur n'est pas un formateur
+    header('Location: ../../login.php');
+    exit();
+}
+// Déconnexion si le bouton est cliqué
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    
+    $authController = new AuthController($db);
+    $authController->logoutInFolder();
+}
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <?php if ($user): ?>
-      <?php
-        $roleId = is_object($user) ? $user->role_id : (is_array($user) ? $user['role_id'] : null);
-        $rolePage = '../index.php';
-
-        switch ($roleId) {
-          case 1:
-            $rolePage = 'index1.php';
-            break;
-          case 2:
-            $rolePage = 'index2.php';
-            break;
-          case 3:
-            $rolePage = 'index3.php';
-            break;
-        }
-      ?>
-      <a class="navbar-brand" href="<?php echo htmlspecialchars($rolePage); ?>">E-learning</a>
-    <?php else: ?>
-      <a class="navbar-brand" href="../index.php">E-learning</a>
-    <?php endif; ?>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+<nav class="navbar navbar-expand-lg navbar bg">
+    <a class="navbar-brand" href="../teacher_dashboard.php">Espace enseignant</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="../my_profile.php">Mon compte</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="../forum/index.php">Le forum</a>
-        </li>
-        <?php if (isset($_SESSION['user'])): ?>
-                <li class="nav-item">
-                    <a class="nav-link" href="logout.php">Déconnexion</a>
-                </li>
-            <?php else: ?>
-                <li class="nav-item">
-                    <a class="nav-link" href="login.php">Connexion</a>
-                </li>
-            <?php endif; ?>
-      </ul>
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Rechercher</button>
-      </form>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="../my_profile.php">Mon profil</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="evaluationDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Évaluations
+                </a>
+                <div class="dropdown-menu" aria-labelledby="evaluationDropdown">
+                    <a class="dropdown-item text-dark" href="../exams/manage_exams.php">Gérer les examens</a>
+                    <a class="dropdown-item text-dark" href="../exams/correction_exam.php">Corriger les examens</a>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../students/manage_students.php">Gérer les élèves</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../quiz/manage_quizzes.php">Gérer les quiz</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../live/manage_lives.php">Gérer les lives</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="../messages.php">Messagerie</a>
+            </li>
+            <li>
+                <form method="POST" class="form-inline ml-auto">
+                    <button type="submit" name="logout" class="btn btn-outline-danger">Déconnexion</button>
+                </form>
+            </li>
+        </ul>
+        
     </div>
-  </div>
 </nav>

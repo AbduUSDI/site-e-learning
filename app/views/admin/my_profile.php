@@ -4,9 +4,9 @@ session_start();
 // Durée de vie de la session en secondes (30 minutes)
 $sessionLifetime = 1800;
 
-// Vérification que l'utilisateur est connecté et est un administrateur
+// Vérification que l'utilisateur est connecté et est un étudiant
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
-    header('Location: ../../../app/auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -14,7 +14,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $sessionLifetime)) {
     session_unset();
     session_destroy();
-    header('Location: ../../../app/auth/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -33,24 +33,16 @@ use App\Controllers\AuthController;
 $database = new Database();
 $db = $database->getConnection();
 
-// Vérifiez que l'utilisateur est connecté et qu'il est un administrateur
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
-if (!$user || $user['role_id'] != 1) {
-    // Rediriger vers la page de connexion si l'utilisateur n'est pas un administrateur
-    header('Location: ../../login.php');
-    exit();
-}
 // Déconnexion si le bouton est cliqué
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
-    
     $authController = new AuthController($db);
     $authController->logoutAdmin();
 }
 
-// Vérification de l'authentification de l'utilisateur
 if (!isset($_SESSION['user'])) {
-    header('Location: ../../public/login.php');
+    header('Location: ../../auth/login.php');
     exit;
 }
 
@@ -128,6 +120,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     break;
 
+                case 'respond_friend_request':
+                    $requestId = filter_input(INPUT_POST, 'request_id', FILTER_SANITIZE_NUMBER_INT);
+                    $status = filter_input(INPUT_POST, 'status', FILTER_SANITIZE_STRING);
+
+                    if ($requestId && $status) {
+                        $result = $friendController->respondToFriendRequest($requestId, $status);
+                        $message = $result ? "Demande d'ami $status avec succès." : "Erreur lors de la réponse à la demande d'ami.";
+                    } else {
+                        $message = "ID de demande d'ami invalide ou statut manquant.";
+                    }
+                    break;
+
+                case 'remove_friend':
+                    $friendId = filter_input(INPUT_POST, 'friend_id', FILTER_SANITIZE_NUMBER_INT);
+                    if ($friendId) {
+                        $result = $friendController->removeFriend($userId, $friendId);
+                        $message = $result ? "Ami supprimé avec succès." : "Erreur lors de la suppression de l'ami.";
+                    } else {
+                        $message = "ID d'ami invalide pour la suppression.";
+                    }
+                    break;
+
                 case 'update_thread':
                     $threadId = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
                     $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
@@ -173,23 +187,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     break;
 
-                    case 'update_user_profile':
-                        $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
-                        $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-                        $newPassword = filter_input(INPUT_POST, 'new_password', FILTER_SANITIZE_STRING);
-                        
-                        if ($username && $email) {
-                            $result = $userController->updateUserProfile($userId, $username, $email, $newPassword);
-                            if ($result) {
-                                $_SESSION['user']['username'] = $username;
-                                $_SESSION['user']['email'] = $email;
-                            }
-                            $message = $result ? "Profile updated successfully." : "Error updating profile.";
-                        } else {
-                            $message = "Username and email are required.";
-                        }
-                        break;
+                case 'update_user_profile':
+                    $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING);
+                    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+                    $newPassword = filter_input(INPUT_POST, 'new_password', FILTER_SANITIZE_STRING);
                     
+                    if ($username && $email) {
+                        $result = $userController->updateUserProfile($userId, $username, $email, $newPassword);
+                        if ($result) {
+                            $_SESSION['user']['username'] = $username;
+                            $_SESSION['user']['email'] = $email;
+                        }
+                        $message = $result ? "Profil mis à jour avec succès." : "Erreur lors de la mise à jour du profil.";
+                    } else {
+                        $message = "Nom d'utilisateur et email requis.";
+                    }
+                    break;
                     
                 // Ajout de cases pour gérer les actions supplémentaires...
             }
@@ -210,7 +223,7 @@ $friends = $friendController->getFriends($userId);
 $userThreads = $threadController->getThreadsByUserId($userId);
 $userResponses = $responseController->getResponsesByUserId($userId);
 
-include '../../../public/templates/header.php';
+include_once '../../../public/templates/header.php';
 ?>
 
 <style>
@@ -424,9 +437,9 @@ include '../../../public/templates/header.php';
         font-size: 1.25rem;
     }
     .navbar-toggler {
-    background-color: #fff; /* Changer la couleur de fond du bouton */
-    border: none; /* Supprimer les bordures */
-    outline: none; /* Supprimer l'outline */
+        background-color: #fff; /* Changer la couleur de fond du bouton */
+        border: none; /* Supprimer les bordures */
+        outline: none; /* Supprimer l'outline */
     }
 
     .navbar-toggler-icon {
@@ -451,9 +464,63 @@ include '../../../public/templates/header.php';
         opacity: 75%;
         border-radius: 12px;
     }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .left-sidebar, .right-sidebar, .main-content {
+            margin-bottom: 15px;
+        }
+
+        .profile-header img {
+            width: 100px;
+            height: 100px;
+        }
+
+        .profile-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero p {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+        }
+
+        .hero p {
+            font-size: 0.875rem;
+        }
+
+        .profile-header img {
+            width: 80px;
+            height: 80px;
+        }
+
+        .profile-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .profile-header p {
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            font-size: 12px;
+            padding: 8px 15px;
+        }
+    }
 </style>
-
-
 <nav class="navbar navbar-expand-lg navbar bg">
   <div class="container-fluid">
     <a class="navbar-brand" href="admin_dashboard.php">Admin Dashboard</a>
@@ -482,10 +549,10 @@ include '../../../public/templates/header.php';
             Forum
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
-            <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/threads.php">Les discussions</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/my_threads.php">Mes publications</a></li>
           </ul>
         </li>
         <li class="nav-item">
@@ -502,8 +569,6 @@ include '../../../public/templates/header.php';
   </div>
 </nav>
 
-
-
 <div class="container mt-5">
     <div class="profile-header">
         <img src="../../../public/uploads/profil_picture/<?php echo htmlspecialchars($userProfile['photo_profil'] ?? 'default.jpg'); ?>" alt="Photo de profil">
@@ -513,7 +578,7 @@ include '../../../public/templates/header.php';
     </div>
 
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-4">
             <div class="left-sidebar">
                 <div class="sidebar-item">
                     <h3>Informations personnelles</h3>
@@ -530,10 +595,12 @@ include '../../../public/templates/header.php';
                         <?php else: ?>
                             <?php foreach ($friends as $friend): ?>
                                 <li class="list-group-item">
-                                    <?php echo htmlspecialchars($friend['username']); ?>
+                                    <a href="#" class="friend-profile-link" data-toggle="modal" data-target="#friendProfileModal" data-user-id="<?php echo $friend['friend_id']; ?>">
+                                        <?php echo htmlspecialchars($friend['username']); ?>
+                                    </a>
                                     <form action="my_profile.php" method="POST" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet ami ?');">
                                         <input type="hidden" name="action" value="remove_friend">
-                                        <input type="hidden" name="request_id" value="<?php echo $friend['request_id']; ?>">
+                                        <input type="hidden" name="friend_id" value="<?php echo $friend['friend_id']; ?>">
                                         <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
                                     </form>
                                 </li>
@@ -544,7 +611,7 @@ include '../../../public/templates/header.php';
             </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-lg-6 col-md-8">
             <div class="main-content">
                 <div class="content-item">
                     <h3>Mes posts</h3>
@@ -619,7 +686,7 @@ include '../../../public/templates/header.php';
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 col-md-4">
             <div class="right-sidebar">
                 <div class="sidebar-item">
                     <h3>Demandes d'amis en attente</h3>
@@ -652,8 +719,29 @@ include '../../../public/templates/header.php';
     </div>
 </div>
 
-<!-- Modals pour modifier le profil -->
+<!-- Modal Profil de l'ami -->
+<div class="modal fade" id="friendProfileModal" tabindex="-1" role="dialog" aria-labelledby="friendProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="friendProfileModalLabel">Profil de l'ami</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="friend-profile-content">
+                    <!-- Contenu du profil chargé via AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Modals pour modifier le profil -->
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -763,7 +851,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    var friendProfileLinks = document.querySelectorAll('.friend-profile-link');
+
+    friendProfileLinks.forEach(function(link) {
+        link.addEventListener('click', function(event) {
+            event.preventDefault();
+            var userId = this.getAttribute('data-user-id');
+
+            fetch('ajax/get_user_profile.php?friend_id=' + userId)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('friend-profile-content').innerHTML = data;
+                })
+                .catch(error => console.error('Erreur:', error));
+        });
+    });
 });
+
 document.addEventListener('DOMContentLoaded', function() {
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('new_password');

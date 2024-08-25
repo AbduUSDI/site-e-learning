@@ -186,4 +186,22 @@ class User {
 
         return $stmt->execute();
     }
+    public function getCursusValidationStats() {
+        $query = "SELECT COUNT(*) as total, 
+                  SUM(cursus_valide = 1) as cursus_valide, 
+                  SUM(cursus_valide = 0) as cursus_non_valide 
+                  FROM users 
+                  WHERE role_id = 3"; // Assurez-vous que le rôle 3 correspond bien aux étudiants
+    
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    public function updateCertificateIssued($userId)
+    {
+        $query = "UPDATE " . $this->table_name . " SET certificate_issued = 1 WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $userId);
+        return $stmt->execute();
+    }
 }

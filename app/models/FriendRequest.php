@@ -8,7 +8,7 @@ class FriendRequest
     private $conn;
     private $tableRequests = 'friend_requests';
     private $tableFriends = 'friends';
-
+    private $tableUsers = 'users';
     public function __construct($db)
     {
         $this->conn = $db;
@@ -72,14 +72,39 @@ class FriendRequest
 
     public function getFriends($userId)
     {
-        $query = "SELECT * FROM " . $this->tableFriends . " WHERE user_id = :user_id OR friend_id = :user_id";
+        $query = "
+            SELECT DISTINCT u.username, u.id as friend_id
+            FROM " . $this->tableFriends . " f
+            JOIN " . $this->tableUsers . " u ON u.id = CASE 
+                WHEN f.user_id = :user_id THEN f.friend_id 
+                ELSE f.user_id 
+            END
+            WHERE (f.user_id = :user_id OR f.friend_id = :user_id)
+        ";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $userId);
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function removeFriend($userId, $friendId)
+    {
+        $query = "
+            DELETE FROM " . $this->tableFriends . "
+            WHERE (user_id = :user_id AND friend_id = :friend_id)
+            OR (user_id = :friend_id AND friend_id = :user_id)
+        ";
 
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->bindParam(':friend_id', $friendId);
+
+        if ($stmt->execute()) {
+            return true;
+        }
+
+        return false;
+    }
     public function getPendingRequests($userId)
     {
         $query = "SELECT * FROM " . $this->tableRequests . " WHERE receiver_id = :user_id AND status = 'pending'";
@@ -89,13 +114,30 @@ class FriendRequest
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function getFriendRequests($user_id)
-{
-    $query = "SELECT * FROM " . $this->tableRequests . " WHERE receiver_id = :user_id AND status = 'pending'";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bindParam(':user_id', $user_id);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+    public function getFriendRequests($userId)
+    {
+        $query = "
+            SELECT fr.id, fr.sender_id, fr.receiver_id, fr.status, u.username AS sender_username
+            FROM " . $this->tableRequests . " fr
+            JOIN " . $this->tableUsers . " u ON fr.sender_id = u.id
+            WHERE fr.receiver_id = :user_id AND fr.status = 'pending'
+        ";
+    
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':user_id', $userId);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    // Méthode pour obtenir un utilisateur par ID
+    public function getUserById($userId)
+    {
+        $query = "SELECT * FROM " . $this->tableUsers . " WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
 
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

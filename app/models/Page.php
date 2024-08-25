@@ -65,6 +65,14 @@ class Page
     
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+    // Méthode pour incrémenter le compteur de vues d'une page
+    public function incrementViewCount($pageId)
+    {
+        $query = "UPDATE " . $this->table_name . " SET view_count = view_count + 1 WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $pageId);
+        return $stmt->execute();
+    }
     public function getPagesWithPagination($start, $limit) {
         $query = "SELECT * FROM pages LIMIT :start, :limit";
         $stmt = $this->conn->prepare($query);

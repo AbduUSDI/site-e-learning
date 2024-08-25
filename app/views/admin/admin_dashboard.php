@@ -7,7 +7,6 @@ $sessionLifetime = 1800;
 // Vérifiez que l'utilisateur est connecté et qu'il est un administrateur
 $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 
-// Vérification que l'utilisateur est connecté et est un administrateur
 if (!isset($_SESSION['user']) || $_SESSION['user']['role_id'] != 1) {
     header('Location: ../../../app/auth/login.php');
     exit;
@@ -26,6 +25,7 @@ $_SESSION['LAST_ACTIVITY'] = time();
 require_once '../../../vendor/autoload.php';
 
 use App\Config\Database;
+use App\Config\MongoDB;
 use App\Controllers\AuthController;
 use App\Controllers\FormationController;
 use App\Controllers\CategoryController;
@@ -35,7 +35,6 @@ use App\Controllers\ThreadController;
 use App\Controllers\UserController;
 use App\Controllers\ProfileController;
 use App\Controllers\QuizController;
-use App\Config\MongoDB;
 
 $database = new Database();
 $db = $database->getConnection();
@@ -54,22 +53,12 @@ $users = $userController->getAllUsers();
 $formations = $formationController->getAllFormations();
 $pages = $pageController->getAllPages();
 
-// Vérifiez si $users contient un tableau valide
-if (!is_array($users) || empty($users)) {
-    echo "Aucun utilisateur trouvé.";
-} else {
-    foreach ($users as $user) {
-        $userId = $user['id'];
-        // Votre traitement ici...
-    }
-}
-
-$profil = $profileController->getProfileByUserId($userId);
-$threads = $threadController->getAllThreads();
-$quizzes = $quizController->getAllQuizzes();
+// Récupération des statistiques des élèves
+$cursusStats = $userController->getCursusValidationStats();
 
 // Déconnexion si le bouton est cliqué
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
+    
     $authController = new AuthController($db);
     $authController->logoutAdmin();
 }
@@ -237,26 +226,124 @@ include_once '../../../public/templates/header.php'; ?>
     .hero p {
         font-size: 1.25rem;
     }
+
     .navbar-toggler {
-    background-color: #fff; /* Changer la couleur de fond du bouton */
-    border: none; /* Supprimer les bordures */
-    outline: none; /* Supprimer l'outline */
+    background-color: #fff;
+    border: none;
+    outline: none;
     }
 
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        /* Remplacer la couleur de l'icône par une couleur plus foncée */
-        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
     }
 
     .navbar-toggler:focus {
-        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+        outline: none;
     }
+
     .navbar-toggler-icon {
         width: 25px;
         height: 25px;
     }
+
+    /* Style pour les formations en cartes */
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        background-color: #343a40;
+        color: #ffffff;
+        padding: 15px;
+        border-bottom: none;
+        border-radius: 8px 8px 0 0;
+        font-weight: bold;
+    }
+
+    .card-body {
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+    }
+
+    .modal-header, .modal-footer {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+    .h3catego {
+        font-weight: bold;
+    }
+    .subcategomodal {
+        font-style: italic;
+    }
+    .pagemodal {
+        color: blue;
+    }
+
+    /* Statistiques des élèves */
+    .stats-container {
+        margin-top: 50px;
+    }
+
+    .stats-card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .stats-card h5 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .card-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .card-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .card-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .card-primary h5,
+    .card-success h5,
+    .card-danger h5 {
+        color: white;
+    }
+
 </style>
+
 <nav class="navbar navbar-expand-lg navbar bg">
   <div class="container-fluid">
     <a class="navbar-brand" href="admin_dashboard.php">Admin Dashboard</a>
@@ -285,10 +372,11 @@ include_once '../../../public/templates/header.php'; ?>
             Forum
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
-            <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/add_thread.php">Créer une discussion</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/threads.php">Les discussions</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/my_threads.php">Mes publications</a></li>
+            <li><a class="dropdown-item text-dark" href="../forum/index.php">Accueil forum</a></li>
           </ul>
         </li>
         <li class="nav-item">
@@ -306,87 +394,93 @@ include_once '../../../public/templates/header.php'; ?>
 </nav>
 
 <div class="container mt-5">
-    <h2 class="text-white">Statistiques de visionnage de la médiatèque</h2>
+    <h2 class="text-white">Formations</h2>
     <div class="row">
-        <div class="col-md-12">
-            <?php foreach ($formations as $formation): ?>
+        <?php foreach ($formations as $formation): ?>
+            <div class="col-md-4">
                 <div class="card mb-3">
                     <div class="card-header">
-                        Formation: <?php echo htmlspecialchars_decode($formation['name']); ?>
+                        <?php echo htmlspecialchars_decode($formation['name']); ?>
                     </div>
                     <div class="card-body">
-                        <?php 
-                        $categories = $categoryController->getCategoriesByFormation($formation['id']);
-                        foreach ($categories as $category): 
-                        ?>
-                            <h5 class="card-title">Catégorie: <?php echo htmlspecialchars_decode($category['title']); ?></h5>
-                            <?php 
-                            $subcategories = $subCategoryController->getSubCategoriesByCategory($category['id']);
-                            foreach ($subcategories as $subcategory): 
-                            ?>
-                                <h6 class="card-subtitle mb-2 text-muted">Sous-Catégorie: <?php echo htmlspecialchars_decode($subcategory['title']); ?></h6>
-                                <?php 
-                                $pages = $pageController->getPagesBySubCategory($subcategory['id']);
-                                foreach ($pages as $page): 
-                                ?>
-                                    <div class="mt-2">
-                                        <h6 class="card-title">Page: <?php echo htmlspecialchars_decode($page['title']); ?></h6>
-                                        <?php
-                                            $base_url = '../../../public/image_and_video/mp4/';
-                                            $video_url = htmlspecialchars_decode($page['video_url']);
-                                            $cleaned_video_url = str_replace('../../../../public/image_and_video/mp4/', $base_url, $video_url);
-                                            ?>
-                                            <iframe src="<?php echo $cleaned_video_url; ?>" width="100%" height="300" frameborder="0" allowfullscreen></iframe>
-                                        <p class="card-text">
-                                            Nombre de visionnages : <?php echo htmlspecialchars_decode($page['view_count']); ?>
-                                        </p>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endforeach; ?>
-                        <?php endforeach; ?>
+                        <p><?php echo htmlspecialchars_decode($formation['description']); ?></p>
+                        <button class="btn btn-info" data-toggle="modal" data-target="#formationModal<?php echo $formation['id']; ?>">Voir Détails</button>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="formationModal<?php echo $formation['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="formationModalLabel<?php echo $formation['id']; ?>" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formationModalLabel<?php echo $formation['id']; ?>"><?php echo htmlspecialchars_decode($formation['name']); ?></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <?php 
+                            $categories = $categoryController->getCategoriesByFormation($formation['id']);
+                            foreach ($categories as $category): 
+                            ?>
+                                <h3 class="h3catego"><?php echo htmlspecialchars_decode($category['title']); ?></h3>
+                                <?php 
+                                $subcategories = $subCategoryController->getSubCategoriesByCategory($category['id']);
+                                foreach ($subcategories as $subcategory): 
+                                ?>
+                                    <h4 class="subcategomodal"><?php echo htmlspecialchars_decode($subcategory['title']); ?></h4>
+                                    <?php 
+                                    $pages = $pageController->getPagesBySubCategory($subcategory['id']);
+                                    foreach ($pages as $page): 
+                                    ?>
+                                        <div class="mt-2">
+                                            <h5 class="pagemodal"><?php echo htmlspecialchars_decode($page['title']); ?></h5>
+                                            <?php
+                                                $base_url = '../../../public/image_and_video/mp4/';
+                                                $video_url = htmlspecialchars_decode($page['video_url']);
+                                                $cleaned_video_url = str_replace('../../../../public/image_and_video/mp4/', $base_url, $video_url);
+                                            ?>
+                                            <iframe src="<?php echo $cleaned_video_url; ?>" width="100%" height="200" frameborder="0" allowfullscreen></iframe>
+                                            <p>
+                                                Nombre de visionnages : <?php echo htmlspecialchars_decode($page['view_count']); ?>
+                                            </p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 </div>
 
-<div class="container mt-5">
-    <h2 class="text-white">Progression des Étudiants</h2>
-    <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Nom d'utilisateur</th>
-                    <th>Email</th>
-                    <th>Progression</th>
-                    <th>Points Quiz</th>
-                    <th>Cursus Validé</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (is_array($users) && !empty($users)): ?>
-                    <?php foreach ($users as $user): ?>
-                        <?php 
-                            $progression = getProgressionFromMongoDB($user['_id']);
-                            $quizPoints = getQuizPointsFromMongoDB($user['_id']);
-                            $formationValidation = getFormationValidationFromMongoDB($user['_id']);
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars_decode($user['username']); ?></td>
-                            <td><?php echo htmlspecialchars_decode($user['email']); ?></td>
-                            <td><?php echo htmlspecialchars_decode($progression); ?>%</td>
-                            <td><?php echo htmlspecialchars_decode($quizPoints); ?></td>
-                            <td><?php echo htmlspecialchars_decode($formationValidation ? 'Oui' : 'Non'); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="5">Aucun utilisateur trouvé.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+<div class="container stats-container">
+    <h2 class="text-white">Statistiques des Élèves</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stats-card card-primary text-white">
+                <h5>Total des étudiants</h5>
+                <p><?php echo $cursusStats['total']; ?> étudiants inscrits.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card card-success text-white">
+                <h5>Cursus Validé</h5>
+                <p><?php echo $cursusStats['cursus_valide']; ?> étudiants ayant validé le cursus.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card card-danger text-white">
+                <h5>Cursus Non Validé</h5>
+                <p><?php echo $cursusStats['cursus_non_valide']; ?> étudiants n'ayant pas validé le cursus.</p>
+            </div>
+        </div>
     </div>
 </div>
 

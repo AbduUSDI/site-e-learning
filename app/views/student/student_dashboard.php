@@ -29,7 +29,7 @@ $previousResults = $quizController->getPreviousResults($userId);
 // Déconnexion si le bouton est cliqué
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     $authController = new AuthController($db);
-    $authController->logoutInFolder();
+    $authController->logoutAdmin();
 }
 
 $formations = $formationController->getFormationsByUser($_SESSION['user']['id']);
@@ -159,26 +159,39 @@ include_once '../../../public/templates/header.php';
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="mediateque/view_courses.php">Vers les cours</a>
+                <a class="nav-link" href="mediateque/view_courses.php">La médiatèque</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="quiz/views_quizzes.php">Mes Quiz</a>
+                <a class="nav-link" href="quiz/views_quizzes.php">Les quiz</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="evaluationDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+                    Evaluations
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="evaluationDropdown">
+                    <li><a class="dropdown-item text-dark" href="exam/view_exams.php">Voir les évaluations</a></li>
+                    <li><a class="dropdown-item text-dark" href="exam/view_corrections.php">Voir les corrections</a></li>
+                </ul>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="messages.php">Mes Messages</a>
+                <a class="nav-link" href="messages.php">Messagerie</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="my_profile.php">Mon Profil</a>
+                <a class="nav-link" href="my_profile.php">Mon profil</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="lives/view_lives.php">Les lives</a>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
                     Forum
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
-                    <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
+                    <li><a class="dropdown-item text-dark" href="../forum/add_thread.php">Créer une discussion</a></li>
+                    <li><a class="dropdown-item text-dark" href="../forum/threads.php">Les discussions</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+                    <li><a class="dropdown-item text-dark" href="../forum/my_threads.php">Mes publications</a></li>
+                    <li><a class="dropdown-item text-dark" href="../forum/index.php">Accueil</a></li>
                 </ul>
             </li>
         
@@ -207,7 +220,7 @@ include_once '../../../public/templates/header.php';
                                     $progressPercentage = $formationController->getStudentProgress($_SESSION['user']['id'], $formation['id']);
                                 ?>
                                 <li class="list-group-item">
-                                    <a href="mediateque/view_courses.php?formation_id=<?php echo $formation['id']; ?>">
+                                    <a href="mediateque/formation_details.php?formation_id=<?php echo $formation['id']; ?>">
                                         <?php echo htmlspecialchars_decode($formation['name']); ?>
                                     </a>
                                     <div class="progress mt-2">
