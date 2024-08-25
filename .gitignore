@@ -4,3 +4,4 @@ node_modules
 # Fichier à ignorer 
 composer.lock
 package-lock.json
+error_log.txt
