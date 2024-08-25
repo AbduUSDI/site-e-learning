@@ -247,7 +247,7 @@ switch ($action) {
         case 'save_page':
             $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
             $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $content = filter_input(INPUT_POST, 'content', FILTER_UNSAFE_RAW);
             $subcategory_id = filter_input(INPUT_POST, 'subcategory_id', FILTER_VALIDATE_INT);
             $video_url = filter_input(INPUT_POST, 'video_url', FILTER_VALIDATE_URL);
         

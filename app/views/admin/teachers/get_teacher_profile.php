@@ -25,8 +25,17 @@ if (isset($_GET['id'])) {
         echo "<p><strong>Date de naissance:</strong> " . htmlspecialchars($profile['date_naissance']) . "</p>";
         echo "<p><strong>Biographie:</strong> " . htmlspecialchars($profile['biographie']) . "</p>";
         if ($profile['photo_profil']) {
-            echo "<p><strong>Photo de profil:</strong><br><img src='" . htmlspecialchars($profile['photo_profil']) . "' alt='Photo de profil' style='max-width:200px;'></p>";
+            // Construire le chemin vers la photo de profil
+            $photoProfilPath = "../../../../public/uploads/profil_picture/" . basename($profile['photo_profil']);
+        
+            // Vérifier si le fichier existe
+            if (file_exists($photoProfilPath)) {
+                echo "<p><strong>Photo de profil:</strong><br><img src='" . htmlspecialchars($photoProfilPath) . "' alt='Photo de profil' style='max-width:200px;'></p>";
+            } else {
+                echo "<p><strong>Photo de profil:</strong> Image non trouvée.</p>";
+            }
         }
+        
 
         // Vérifier si l'utilisateur connecté est différent du profil consulté
         if (isset($_SESSION['user']) && $_SESSION['user']['id'] != $teacher_id) {

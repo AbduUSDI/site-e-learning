@@ -125,7 +125,7 @@ class AuthController
         session_destroy();
 
         // Rediriger l'utilisateur vers la page de connexion
-        header("Location: ../../../app/auth/login.php");
+        header("Location: ../../auth/login.php");
         exit();
     }
     public function logoutInFolder()

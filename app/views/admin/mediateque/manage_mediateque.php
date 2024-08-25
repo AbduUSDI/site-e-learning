@@ -446,7 +446,7 @@ function loadPages(pages) {
                 <div class="card mb-3">
                     <div class="card-body">
                         <h6 class="card-title">${page.title}</h6>
-                        <p class="card-text">${page.content}</p>
+                        <p class="card-text" name="page-description">${page.content}</p>
                         ${page.video_url ? `<video controls style="width: 100%;"><source src="${page.video_url}" type="video/mp4">Your browser does not support the video tag.</video>` : ''}
                         <button class="btn btn-secondary editPage" data-id="${page.id}">Modifier</button>
                         <button class="btn btn-danger deletePage" data-id="${page.id}">Supprimer</button>
@@ -808,6 +808,7 @@ $(document).on('click', '.editPage', function () {
         }
     });
 });
+
 </script>
 
 <?php include_once '../../../../public/templates/footer.php'; ?>
