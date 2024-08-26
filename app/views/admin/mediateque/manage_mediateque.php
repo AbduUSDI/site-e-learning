@@ -48,6 +48,8 @@ header('Content-Type: text/html; charset=utf-8');
 include_once '../../../../public/templates/header.php';
 include_once '../navbar_admin.php';
 ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <style>
   body {
         background: url('../../../../public/image_and_video/gif/anim_background2.gif');
@@ -185,8 +187,6 @@ include_once '../navbar_admin.php';
     footer a:hover {
         text-decoration: underline;
     }
-
-    /* Ajout de la section "hero" pour donner une touche professionnelle */
     .hero {
         background: url('../../../../public/image_and_video/webp/background_image_index.webp') no-repeat center center;
         background-size: cover;
@@ -208,23 +208,59 @@ include_once '../navbar_admin.php';
         font-size: 1.25rem;
     }
     .navbar-toggler {
-    background-color: #fff; /* Changer la couleur de fond du bouton */
-    border: none; /* Supprimer les bordures */
-    outline: none; /* Supprimer l'outline */
+    background-color: #fff;
+    border: none;
+    outline: none;
     }
 
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        /* Remplacer la couleur de l'icône par une couleur plus foncée */
-        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
     }
 
     .navbar-toggler:focus {
-        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+        outline: none;
     }
     .navbar-toggler-icon {
         width: 25px;
         height: 25px;
+    }
+    #scrollToTopBtn {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 99;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        padding: 10px 15px;
+        cursor: pointer;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #333;
+    }
+    #scrollToBottomBtn {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 80px;
+        z-index: 99;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        padding: 10px 15px;
+        cursor: pointer;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #scrollToBottomBtn:hover {
+        background-color: #333;
     }
 </style>
 <div class="container">
@@ -346,6 +382,12 @@ include_once '../navbar_admin.php';
         </div>
     </div>
 </div>
+<button onclick="topFunction()" id="scrollToTopBtn" title="Retour en haut">
+    <i class="fas fa-arrow-up"></i>
+</button>
+<button onclick="bottomFunction()" id="scrollToBottomBtn" title="Aller en bas">
+    <i class="fas fa-arrow-down"></i>
+</button>
 
 <!-- Inclusion de jQuery (version complète, pas la version 'slim' qui ne supporte pas AJAX) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -808,6 +850,37 @@ $(document).on('click', '.editPage', function () {
         }
     });
 });
+window.onscroll = function() {scrollFunction()};
+
+    function scrollFunction() {
+        // Montrer le bouton "Retour en haut" si l'utilisateur a défilé plus de 20px
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("scrollToTopBtn").style.display = "block";
+        } else {
+            document.getElementById("scrollToTopBtn").style.display = "none";
+        }
+
+        // Montrer le bouton "Aller en bas" si l'utilisateur n'est pas encore en bas
+        if ((window.innerHeight + window.scrollY) < document.body.offsetHeight) {
+            document.getElementById("scrollToBottomBtn").style.display = "block";
+        } else {
+            document.getElementById("scrollToBottomBtn").style.display = "none";
+        }
+    }
+
+    function topFunction() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    function bottomFunction() {
+        window.scrollTo({
+            top: document.body.scrollHeight, // Aller à la hauteur totale de la page
+            behavior: 'smooth'
+        });
+    }
 
 </script>
 

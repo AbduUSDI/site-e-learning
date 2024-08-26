@@ -184,7 +184,7 @@ include_once '../navbar_student.php';
                                                         <div class="card-body">
                                                             <p><?php echo htmlspecialchars_decode($page['content']); ?></p>
                                                             <?php if (!empty($page['video_url'])): ?>
-                                                                <iframe src="<?php echo htmlspecialchars_decode($page['video_url']); ?>" controls></iframe>
+                                                                <div class="flowplayer" data-splash="true"><video data-title="titre" controls="controls" wmode="transparent" type="video/mp4" src="<?php echo htmlspecialchars_decode($page['video_url']); ?>" height="200" width="100%"></video></div>
                                                             <?php endif; ?>
                                                         </div>
                                                     </div>

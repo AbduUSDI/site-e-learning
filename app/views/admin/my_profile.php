@@ -204,7 +204,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     break;
                     
-                // Ajout de cases pour gérer les actions supplémentaires...
             }
         } catch (Exception $e) {
             $message = "Une erreur est survenue : " . $e->getMessage();
@@ -217,7 +216,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Récupération des données nécessaires pour l'affichage
 $friendRequests = $friendController->getFriendRequests($userId);
 $friends = $friendController->getFriends($userId);
 $userThreads = $threadController->getThreadsByUserId($userId);
@@ -437,19 +435,17 @@ include_once '../../../public/templates/header.php';
         font-size: 1.25rem;
     }
     .navbar-toggler {
-        background-color: #fff; /* Changer la couleur de fond du bouton */
-        border: none; /* Supprimer les bordures */
-        outline: none; /* Supprimer l'outline */
+        background-color: #fff;
+        border: none;
+        outline: none;
     }
 
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        /* Remplacer la couleur de l'icône par une couleur plus foncée */
-        /* Vous pouvez ajuster la couleur rgba(0, 0, 0, 0.5) pour un contraste différent */
     }
 
     .navbar-toggler:focus {
-        outline: none; /* Assurez-vous que le bouton ne montre pas d'outline au focus */
+        outline: none;
     }
     .navbar-toggler-icon {
         width: 25px;
@@ -530,19 +526,19 @@ include_once '../../../public/templates/header.php';
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="users/manage_users.php">Gérer les Utilisateurs</a>
+          <a class="nav-link" href="users/manage_users.php">Gérer les utilisateurs</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les Enseignants</a>
+          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les enseignants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="students/manage_students.php">Gérer les Étudiants</a>
+          <a class="nav-link" href="students/manage_students.php">Gérer les étudiants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les Quiz</a>
+          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les quiz</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
+          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la médiathèque</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -556,7 +552,7 @@ include_once '../../../public/templates/header.php';
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>
+          <a class="nav-link" href="rules/manage_rules.php">Gérer les règles</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="my_profile.php">Mon profil</a>

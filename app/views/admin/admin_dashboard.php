@@ -353,19 +353,19 @@ include_once '../../../public/templates/header.php'; ?>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       <li class="nav-item">
-          <a class="nav-link" href="users/manage_users.php">Gérer les Utilisateurs</a>
+          <a class="nav-link" href="users/manage_users.php">Gérer les utilisateurs</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les Enseignants</a>
+          <a class="nav-link" href="teachers/manage_teachers.php">Gérer les enseignants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="students/manage_students.php">Gérer les Étudiants</a>
+          <a class="nav-link" href="students/manage_students.php">Gérer les étudiants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les Quiz</a>
+          <a class="nav-link" href="quizzes/manage_quizzes.php">Gérer les quiz</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la Médiathèque</a>
+          <a class="nav-link" href="mediateque/manage_mediateque.php">Gérer la médiathèque</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -380,7 +380,7 @@ include_once '../../../public/templates/header.php'; ?>
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="rules/manage_rules.php">Gérer les Règles</a>
+          <a class="nav-link" href="rules/manage_rules.php">Gérer les règles</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="my_profile.php">Mon profil</a>
@@ -441,7 +441,7 @@ include_once '../../../public/templates/header.php'; ?>
                                                 $video_url = htmlspecialchars_decode($page['video_url']);
                                                 $cleaned_video_url = str_replace('../../../../public/image_and_video/mp4/', $base_url, $video_url);
                                             ?>
-                                            <iframe src="<?php echo $cleaned_video_url; ?>" width="100%" height="200" frameborder="0" allowfullscreen></iframe>
+                                            <div class="flowplayer" data-splash="true"><video data-title="titre" controls="controls" wmode="transparent" type="video/mp4" src="<?php echo $cleaned_video_url . '?autoplay=0'; ?>" height="200" width="100%"></video></div>
                                             <p>
                                                 Nombre de visionnages : <?php echo htmlspecialchars_decode($page['view_count']); ?>
                                             </p>
