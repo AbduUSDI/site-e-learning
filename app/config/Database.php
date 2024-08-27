@@ -1,5 +1,5 @@
 <?php
-namespace App\Config;
+namespace app\config;
 
 use PDO;
 use PDOException;
@@ -8,7 +8,7 @@ use Exception;
 /**
  * Classe pour établir une connexion à la base de données
  */
-class Database {
+class database {
     private $hote = 'cky0ko.stackhero-network.com';
     private $nom_base_de_donnees = 'e_learning';
     private $identifiant = 'root';

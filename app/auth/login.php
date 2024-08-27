@@ -2,10 +2,10 @@
 
 require_once '../../vendor/autoload.php';
 
-use app\config\Database;
+use app\config\database;
 use app\controllers\AuthController;
 
-$database = new Database();
+$database = new database();
 $db = $database->getConnection();
 
 $authController = new AuthController($db);
