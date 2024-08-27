@@ -286,7 +286,7 @@ include_once '../navbar_teacher.php';
                         <td><a href="<?php echo htmlspecialchars($live['link']); ?>" target="_blank">Rejoindre</a></td>
                         <td>
                             <button class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editLiveModal" data-id="<?php echo $live['id']; ?>" data-title="<?php echo htmlspecialchars($live['title']); ?>" data-description="<?php echo htmlspecialchars($live['description']); ?>" data-date="<?php echo htmlspecialchars($live['date']); ?>" data-link="<?php echo htmlspecialchars($live['link']); ?>">Modifier</button>
-                            <form action="manage_live.php" method="POST" style="display:inline-block;">
+                            <form action="manage_lives.php" method="POST" style="display:inline-block;">
                                 <input type="hidden" name="id" value="<?php echo $live['id']; ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette session live ?')">Supprimer</button>

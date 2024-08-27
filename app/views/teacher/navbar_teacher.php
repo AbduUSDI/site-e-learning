@@ -64,3 +64,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
         
     </div>
 </nav>
+<style>
+    .navbar-toggler {
+    background-color: #fff;
+    border: none;
+    outline: none;
+    }
+
+    .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    .navbar-toggler:focus {
+        outline: none;
+    }
+    .navbar-toggler-icon {
+        width: 25px;
+        height: 25px;
+    }
+</style>

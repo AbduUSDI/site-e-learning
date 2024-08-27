@@ -267,7 +267,7 @@ include_once '../navbar_admin.php';
     <h1 class="mt-5">Gestion de la Médiathèque</h1>
     <button id="addFormation" class="btn btn-primary mt-3 mb-3">Ajouter une Formation</button>
     <div id="formationsList">
-        <!-- Liste des formations sera injectée ici -->
+        <!-- Liste des formations sera généré ici -->
     </div>
 </div>
 

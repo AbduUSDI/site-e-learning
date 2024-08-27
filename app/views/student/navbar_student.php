@@ -60,11 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
                     Forum
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="forumDropdown">
-                    <li><a class="dropdown-item text-dark" href="../forum/add_thread.php">Créer une discussion</a></li>
-                    <li><a class="dropdown-item text-dark" href="../forum/threads.php">Les discussions</a></li>
+                    <li><a class="dropdown-item text-dark" href="../../forum/add_thread.php">Créer une discussion</a></li>
+                    <li><a class="dropdown-item text-dark" href="../../forum/threads.php">Les discussions</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-dark" href="../forum/my_threads.php">Mes publications</a></li>
-                    <li><a class="dropdown-item text-dark" href="../forum/index.php">Page d'accueil</a></li>
+                    <li><a class="dropdown-item text-dark" href="../../forum/my_threads.php">Mes publications</a></li>
+                    <li><a class="dropdown-item text-dark" href="../../forum/index.php">Page d'accueil</a></li>
                 </ul>
             </li>
             <form method="POST" class="d-inline">

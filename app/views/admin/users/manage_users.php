@@ -125,8 +125,8 @@ try {
     exit;
 }
 
-include '../../../../public/templates/header.php';
-include '../navbar_admin.php';
+include_once '../../../../public/templates/header.php';
+include_once '../navbar_admin.php';
 
 ?>
 <style>

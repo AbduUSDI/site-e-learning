@@ -7,12 +7,12 @@ use Exception;
 /**
  * Classe pour établir une connexion à la base de données
  */
-class Database {
-    private $hote = 'cky0ko.stackhero-network.com';
+class Database2 {
+    private $hote = 'localhost';
     private $nom_base_de_donnees = 'e_learning';
     private $identifiant = 'Abdurahman';
     private $mot_de_passe = 'Abdufufu2525+';
-    private $port = '5040';
+    private $port = '3306';
     private $connexion;
 
     public function getConnection() {
