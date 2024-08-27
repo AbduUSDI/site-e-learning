@@ -8,7 +8,7 @@ use Exception;
 /**
  * Classe pour établir une connexion à la base de données
  */
-class DatabaseConnection {
+class Database {
     private $hote = 'cky0ko.stackhero-network.com';
     private $nom_base_de_donnees = 'e_learning';
     private $identifiant = 'root';
