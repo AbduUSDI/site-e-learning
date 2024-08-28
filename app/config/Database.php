@@ -1,31 +1,28 @@
 <?php
+namespace App\Config;
 
+use PDO;
+use PDOException;
+use Exception;
 /**
  * Classe pour établir une connexion à la base de données
  */
 class Database {
-    private $hote = 'cky0ko.stackhero-network.com';
+    private $hote = 'localhost';
     private $nom_base_de_donnees = 'e_learning';
-    private $identifiant = 'root';
-    private $mot_de_passe = 'a1QDfFRVtBpNgZvJB8cy0dtUlllKXyOL';
-    private $port = '5040';
+    private $identifiant = 'Abdurahman';
+    private $mot_de_passe = 'Abdufufu2525+';
+    private $port = '3306';
     private $connexion;
 
     public function getConnection() {
         $this->connexion = null;
 
         try {
-            // Ajouter les options SSL
-            $options = [
-                PDO::MYSQL_ATTR_SSL_CA => "C:\\Users\\Abdu's PC\\Downloads\\isrgrootx1 (1).pem",
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-            ];
-
             $this->connexion = new PDO(
                 "mysql:host=" . $this->hote . ";port=" . $this->port . ";dbname=" . $this->nom_base_de_donnees,
                 $this->identifiant,
-                $this->mot_de_passe,
-                $options // Ajout des options SSL
+                $this->mot_de_passe
             );
 
             $this->connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
