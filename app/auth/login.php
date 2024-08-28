@@ -2,7 +2,7 @@
 
 require_once '../../vendor/autoload.php';
 
-use Config\Database;
+require_once '../config/Database.php';
 use App\Controllers\AuthController;
 
 $database = new Database();

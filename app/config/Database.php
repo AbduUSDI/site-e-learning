@@ -1,9 +1,4 @@
 <?php
-namespace Config;
-
-use PDO;
-use PDOException;
-use Exception;
 
 /**
  * Classe pour établir une connexion à la base de données
